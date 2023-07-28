@@ -1,0 +1,9 @@
+.chart-container {
+    display: flex;
+    height: 500px; /* Añade una altura aquí */
+}
+
+.chart {
+    width: 50%;
+    height: 100%;
+}
