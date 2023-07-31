@@ -27,6 +27,7 @@ async function drawPlot() {
             side: 'right',
             range: [0, 100000]
         },
+        dragmode: 'lasso',
         shapes: [
             // Línea horizontal
             {
@@ -46,6 +47,21 @@ async function drawPlot() {
     };
 
     Plotly.newPlot('myDiv2', plotData, layout); // Aquí también se cambia 'data' por 'plotData'
+
+    var myPlot = document.getElementById('myDiv2');
+
+    myPlot.on('plotly_selected', function (eventData) {
+        if (eventData) {
+            var xRange = eventData.range.x;
+            var yRange = eventData.range.y;
+
+            // Aquí puedes utilizar xRange y yRange para crear tu proyección.
+            // xRange[0] y xRange[1] son el inicio y el fin del rango de selección en el eje x,
+            // yRange[0] y yRange[1] son el inicio y el fin del rango de selección en el eje y.
+
+            console.log(xRange, yRange);
+        }
+    });
 }
 
 drawPlot();
