@@ -10,18 +10,17 @@
 
 <body>
     <div class="chart-container">
-        <div id="myDiv" class="chart"></div>
-        <div id="myDiv2" class="chart"></div>
+        <div id="marketChart" class="chart"></div>
+        <div id="projectionChart" class="chart"></div>
     </div>
 
-    <div id="loginDiv" style="display: none;">
-        <h2>Iniciar sesión</h2>
-        <input type="password" id="passwordInput" placeholder="Contraseña">
-        <button onclick="login()">Ingresar</button>
+    <div id="projectionWindow" class="modal">
+        <div id="projectionDetails" class="modal-content">
+            
+        </div>
     </div>
 
-    <!-- Vincula tu archivo JavaScript aquí, al final del body -->
-    <script src="/helpers/login.js"></script>
+
     <script type="module" src="marketChart.js"></script>
     <script type="module" src="projectionChart.js"></script>
 </body>

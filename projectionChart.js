@@ -11,25 +11,62 @@ var projections = generateProjections();
 // Generamos la data para el gráfico
 var plotData = generatePlotData(projections, lastPrice);
 
+function openProjectionWindow(xRange, yRange) {
+    document.getElementById('projectionDetails').innerHTML =
+        '<div class="container">' +
+            '<div class="first-child">' +
+                '<div>' +
+                    '<img src="https://via.placeholder.com/32" alt="Avatar" class="avatar">' +
+                '</div>' +
+                '<div>' +
+                    '<div class="d-block ml-5">Monica Smith</div>' +
+                    '<div class="d-block ml-5">Asesora de marketing digital</div>' +
+                '</div>' +
+            '<div>' +
+        '</div>' +
+        '</div>' +
+            '<div class="second-child">' +
+                '<div class="w-50">' +
+                    '<div>PRICE RANGE</div>' +
+                    '<div>' + yRange[0] + ' - ' + yRange[1] + '</div>' +
+                '</div>' +
+                '<div class="w-50">' +
+                    '<div>TIME RANGE</div>' +
+                    '<div>' + xRange[0] + ' - ' + xRange[1] + '</div>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+    document.getElementById('projectionWindow').style.display = "block";
+}
+
+
+
+window.closeModal = function () {
+    document.getElementById('projectionWindow').style.display = "none";
+}
+
 
 async function drawPlot() {
-
+    var currentYear = new Date().getFullYear(); // Obtiene el año actual
+    var endYear = currentYear + 10; // Añade 10 años al año actual
 
     var layout = {
         title: 'Proyecciones',
         xaxis: {
             title: 'Tiempo',
-            type: 'date',
-            range: ['2023-07-23', '2023-12-31']
+            tickmode: 'linear',
+            tick0: currentYear,
+            dtick: 1,
+            range: [currentYear, endYear],
+            type: 'linear',
         },
         yaxis: {
             title: 'Valores',
             side: 'right',
             range: [0, 100000]
         },
-        dragmode: 'lasso',
+        dragmode: 'select',
         shapes: [
-            // Línea horizontal
             {
                 type: 'line',
                 xref: 'paper',
@@ -46,20 +83,16 @@ async function drawPlot() {
         showlegend: false
     };
 
-    Plotly.newPlot('myDiv2', plotData, layout); // Aquí también se cambia 'data' por 'plotData'
+    Plotly.newPlot('projectionChart', plotData, layout);
 
-    var myPlot = document.getElementById('myDiv2');
+    var myPlot = document.getElementById('projectionChart');
 
     myPlot.on('plotly_selected', function (eventData) {
         if (eventData) {
             var xRange = eventData.range.x;
             var yRange = eventData.range.y;
 
-            // Aquí puedes utilizar xRange y yRange para crear tu proyección.
-            // xRange[0] y xRange[1] son el inicio y el fin del rango de selección en el eje x,
-            // yRange[0] y yRange[1] son el inicio y el fin del rango de selección en el eje y.
-
-            console.log(xRange, yRange);
+            openProjectionWindow(xRange, yRange); // Llama a la función para abrir la ventana
         }
     });
 }

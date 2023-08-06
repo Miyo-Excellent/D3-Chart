@@ -3,20 +3,20 @@ import { randomDate, randomValue } from './index.js';
 export function generateProjections() {
     var projections = [];
     for (var i = 0; i < 10; i++) {
-        var startTime = randomDate(new Date(2023, 7, 23), new Date(2023, 11, 31)); // Entre hoy y fin de año
-        var endTime = randomDate(new Date(startTime), new Date(2023, 11, 31)); // Entre startTime y fin de año
+        var year = 2023 + i; // Año en el que se genera la proyección
         var minPrice = randomValue(0, 80000); // Entre 0 y 80000
         var maxPrice = randomValue(minPrice, minPrice + 20000); // Entre minPrice y minPrice + 20000
         projections.push({
             minPrice: minPrice,
             maxPrice: maxPrice,
-            startTime: startTime,
-            endTime: endTime,
+            startTime: new Date(year, 0, 1), // Comienza en el inicio del año
+            endTime: new Date(year, 11, 31), // Termina al final del año
             userName: 'Usuario ' + (i + 1)
         });
     }
     return projections;
 }
+
 
 // Genera una fecha a partir de un número de días
 export function generateDate(days) {

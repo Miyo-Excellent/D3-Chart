@@ -25,7 +25,7 @@ async function drawMarketChart() {
 
     var plotData = [trace1];
 
-    Plotly.newPlot('myDiv', plotData, layout);
+    Plotly.newPlot('marketChart', plotData, layout);
 }
 
 drawMarketChart();
