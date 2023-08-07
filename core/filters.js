@@ -1,49 +1,40 @@
-// Filtrar por usuario
-function filterByUser(projections, userName) {
-    return projections.filter(projection => projection.userName === userName);
+// Path: core\filters.js
+// those filters are for getting the data filtered from coinGecko API and then we need update the data in the graph with the new data
+
+function getDaysForFilter(filter) {
+    switch (filter) {
+        case '1D':
+            return 1;
+        case '5D':
+            return 5;
+
+        case '1M':
+            return 30;
+
+        case '3M':
+            return 90;
+
+        case '6M':
+            return 180;
+        case 'YTD':
+            const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+            const today = new Date();
+            return Math.ceil((today - startOfYear) / (1000 * 60 * 60 * 24));
+        case '1Y':
+            return 365;
+
+        case '2Y':
+            return 730;
+
+        case '5Y':
+            return 1825;
+        default:
+            return 365; // Default to 1 year
+    }
 }
 
-// Filtrar por proyecciones positivas
-function filterPositiveProjections(projections, lastPrice) {
-    return projections.filter(projection => projection.minPrice > lastPrice);
+export function drawMarketChartWithFilter(filter, drawMarketChart) {
+    drawMarketChart(getDaysForFilter(filter));
 }
 
-// Filtrar por proyecciones negativas
-function filterNegativeProjections(projections, lastPrice) {
-    return projections.filter(projection => projection.maxPrice < lastPrice);
-}
 
-// Filtrar por fecha, solo se muestran proyecciones que finalizan antes de la fecha dada
-function filterByEndDate(projections, endDate) {
-    return projections.filter(projection => new Date(projection.endTime) <= new Date(endDate));
-}
-
-// Filtrar proyecciones que comienzan después de una fecha dada
-function filterByStartDate(projections, startDate) {
-    return projections.filter(projection => new Date(projection.startTime) >= new Date(startDate));
-}
-
-// Filtrar proyecciones que tienen un precio mínimo mayor que un valor dado
-function filterByMinPrice(projections, minPrice) {
-    return projections.filter(projection => projection.minPrice > minPrice);
-}
-
-// Filtrar proyecciones que tienen un precio máximo menor que un valor dado
-function filterByMaxPrice(projections, maxPrice) {
-    return projections.filter(projection => projection.maxPrice < maxPrice);
-}
-
-// Filtrar proyecciones cuya duración es menor que un número dado de días
-function filterByDuration(projections, maxDays) {
-    return projections.filter(projection => (new Date(projection.endTime) - new Date(projection.startTime)) / (1000 * 60 * 60 * 24) < maxDays);
-}
-
-// Filtrar proyecciones cuyo rango de precios (maxPrice - minPrice) es mayor que un valor dado
-function filterByPriceRange(projections, minRange) {
-    return projections.filter(projection => (projection.maxPrice - projection.minPrice) > minRange);
-}
-
-// Filtrar proyecciones que se solapan con un periodo de tiempo dado
-function filterByOverlap(projections, periodStart, periodEnd) {
-    return projections.filter(projection => new Date(projection.startTime) < new Date(periodEnd) && new Date(projection.endTime) > new Date(periodStart));
-}

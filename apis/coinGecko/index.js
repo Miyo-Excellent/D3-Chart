@@ -8,15 +8,15 @@ export function getLastPrice() {
         .catch(error => console.error(error));
 }
 
-export function getPricesAndDates() {
-    return fetch('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=200')
+export function getPricesAndDates(days) {
+    return fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=${days}`)
         .then(response => response.json())
         .then(data => {
             var dates = data.prices.map(price => {
                 var date = new Date(price[0]);
-                return date.toISOString().slice(0, 10); // Convert timestamp to date string
+                return date.toISOString().slice(0, 10);
             });
-    
+
             var prices = data.prices.map(price => price[1]);
 
             return {

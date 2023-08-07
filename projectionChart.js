@@ -14,37 +14,43 @@ var plotData = generatePlotData(projections, lastPrice);
 function openProjectionWindow(xRange, yRange) {
     document.getElementById('projectionDetails').innerHTML =
         '<div class="container">' +
-            '<div class="first-child">' +
-                '<div>' +
-                    '<img src="https://via.placeholder.com/32" alt="Avatar" class="avatar">' +
-                '</div>' +
-                '<div>' +
-                    '<div class="d-block ml-5">Monica Smith</div>' +
-                    '<div class="d-block ml-5">Asesora de marketing digital</div>' +
-                '</div>' +
-            '<div>' +
+        '<div class="first-child">' +
+        '<div>' +
+        '<img src="https://via.placeholder.com/32" alt="Avatar" class="avatar">' +
+        '</div>' +
+        '<div>' +
+        '<div class="d-block ml-5">Monica Smith</div>' +
+        '<div class="d-block ml-5">Asesora de marketing digital</div>' +
+        '</div>' +
+        '<div>' +
         '</div>' +
         '</div>' +
-            '<div class="second-child">' +
-                '<div class="w-50">' +
-                    '<div>PRICE RANGE</div>' +
-                    '<div>' + yRange[0] + ' - ' + yRange[1] + '</div>' +
-                '</div>' +
-                '<div class="w-50">' +
-                    '<div>TIME RANGE</div>' +
-                    '<div>' + xRange[0] + ' - ' + xRange[1] + '</div>' +
-                '</div>' +
-            '</div>' +
+        '<div class="second-child">' +
+        '<div class="w-50">' +
+        '<div>PRICE RANGE</div>' +
+        '<div>' + yRange[0] + ' - ' + yRange[1] + '</div>' +
+        '</div>' +
+        '<div class="w-50">' +
+        '<div>TIME RANGE</div>' +
+        '<div>' + xRange[0] + ' - ' + xRange[1] + '</div>' +
+        '</div>' +
+        '</div>' +
         '</div>';
-    document.getElementById('projectionWindow').style.display = "block";
+    document.getElementById('projectionWindow').style.display = 'block'; // Cambiado a 'block' para mostrar el modal
 }
 
+// Cerrar el modal cuando se hace clic en cualquier lugar fuera del contenido del modal
+document.getElementById('projectionWindow').addEventListener('click', function () {
+    document.getElementById('projectionWindow').style.display = 'none';
+});
 
+document.getElementById('projectionDetails').addEventListener('click', function (event) {
+    event.stopPropagation();
+});
 
 window.closeModal = function () {
-    document.getElementById('projectionWindow').style.display = "none";
+    document.getElementById('projectionWindow').style.display = 'none';
 }
-
 
 async function drawPlot() {
     var currentYear = new Date().getFullYear(); // Obtiene el año actual
