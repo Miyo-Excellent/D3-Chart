@@ -53,18 +53,19 @@ window.closeModal = function () {
 }
 
 async function drawPlot() {
-    var currentYear = new Date().getFullYear(); // Obtiene el año actual
-    var endYear = currentYear + 10; // Añade 10 años al año actual
+    var currentDate = new Date(); // Obtiene la fecha actual
+    var endYear = new Date(currentDate.getFullYear() + 10, currentDate.getMonth(), currentDate.getDate()); // Añade 10 años a la fecha actual
 
     var layout = {
         title: 'Proyecciones',
         xaxis: {
             title: 'Tiempo',
-            tickmode: 'linear',
-            tick0: currentYear,
-            dtick: 1,
-            range: [currentYear, endYear],
-            type: 'linear',
+            type: 'date',
+            tickmode: 'linear', // Establece el modo de tick en 'linear'
+            tick0: currentDate.toISOString(), // Comienza desde la fecha actual
+            dtick: 31536000000, // Intervalo de 1 año en milisegundos
+            range: [currentDate.toISOString(), endYear.toISOString()], // Rango desde la fecha actual hasta 10 años después
+            tickformat: "%Y", // Muestra solamente el año en el eje X
         },
         yaxis: {
             title: 'Valores',

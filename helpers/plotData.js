@@ -49,5 +49,7 @@ export function generatePlotData(projections, lastPrice) {
         }
     });
 
+    console.log(plotData);
+
     return plotData;
 }
