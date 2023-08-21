@@ -48,6 +48,7 @@ export async function drawMarketChart(filter = '1Y') {
             title: 'Valor del Mercado',
             range: [0, 100000]
         },
+        margin: {l: 50, r: 0, t: 20, b: 40},
     };
 
     var plotData = [trace1];

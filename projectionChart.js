@@ -58,6 +58,7 @@ async function drawPlot() {
 
     var layout = {
         title: 'Proyecciones',
+        margin: {l: 0, r: 50, t: 20, b: 40},
         xaxis: {
             title: 'Tiempo',
             type: 'date',
