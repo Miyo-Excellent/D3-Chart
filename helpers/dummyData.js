@@ -11,7 +11,12 @@ export function generateProjections() {
             maxPrice: maxPrice,
             startTime: new Date(year, 0, 1), // Comienza en el inicio del año
             endTime: new Date(year, 11, 31), // Termina al final del año
-            userName: 'Usuario ' + (i + 1)
+            //random name generator
+            userName: 'Usuario ' + (i + 1),
+            userAvatar: 'https://via.placeholder.com/32',
+            userRole: 'Asesor de marketing digital',
+            // random true or false
+            userOne: Math.random() >= 0.5,
         });
     }
     return projections;

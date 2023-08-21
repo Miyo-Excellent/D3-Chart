@@ -10,8 +10,25 @@ var projections = generateProjections();
 
 // Generamos la data para el gráfico
 var plotData = generatePlotData(projections, lastPrice);
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Asegúrate de que el mes tenga dos dígitos
+    return `${year}-${month}`;
+}
+
+function formatValue(value) {
+    if (value >= 1000) {
+        return (value / 1000).toFixed(0) + 'K'; // Redondea sin decimales y añade 'K'
+    }
+    return value.toFixed(0); // Redondea sin decimales
+}
+
 
 function openProjectionWindow(xRange, yRange) {
+    const formattedXRange = xRange.map(date => formatDate(date));
+    const formattedYRange = yRange.map(value => formatValue(value) + ' BTC');
+
     document.getElementById('projectionDetails').innerHTML =
         '<div class="container">' +
         '<div class="first-child">' +
@@ -28,11 +45,11 @@ function openProjectionWindow(xRange, yRange) {
         '<div class="second-child">' +
         '<div class="w-50">' +
         '<div>PRICE RANGE</div>' +
-        '<div>' + yRange[0] + ' - ' + yRange[1] + '</div>' +
+        '<div>' + formattedYRange[0] + ' - ' + formattedYRange[1] + '</div>' +
         '</div>' +
         '<div class="w-50">' +
         '<div>TIME RANGE</div>' +
-        '<div>' + xRange[0] + ' - ' + xRange[1] + '</div>' +
+        '<div>' + formattedXRange[0] + ' - ' + formattedXRange[1] + '</div>' +
         '</div>' +
         '</div>' +
         '</div>';
@@ -40,9 +57,12 @@ function openProjectionWindow(xRange, yRange) {
 }
 
 // Cerrar el modal cuando se hace clic en cualquier lugar fuera del contenido del modal
-document.getElementById('projectionWindow').addEventListener('click', function () {
-    document.getElementById('projectionWindow').style.display = 'none';
+document.getElementById('projectionWindow').addEventListener('click', function (event) {
+    if (!event.target.closest('#projectionDetails')) {
+        document.getElementById('projectionWindow').style.display = 'none';
+    }
 });
+
 
 document.getElementById('projectionDetails').addEventListener('click', function (event) {
     event.stopPropagation();
@@ -52,13 +72,13 @@ window.closeModal = function () {
     document.getElementById('projectionWindow').style.display = 'none';
 }
 
-async function drawPlot() {
+export async function drawPlot() {
     var currentDate = new Date(); // Obtiene la fecha actual
     var endYear = new Date(currentDate.getFullYear() + 10, currentDate.getMonth(), currentDate.getDate()); // Añade 10 años a la fecha actual
 
     var layout = {
         title: 'Proyecciones',
-        margin: {l: 0, r: 50, t: 20, b: 40},
+        margin: { l: 0, r: 50, t: 20, b: 40 },
         xaxis: {
             title: 'Tiempo',
             type: 'date',

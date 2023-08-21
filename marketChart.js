@@ -1,6 +1,6 @@
 import { getPricesAndDates } from './apis/coinGecko/index.js';
 
-function getDaysForFilter(filter) {
+export function getDaysForFilter(filter) {
     switch (filter) {
         case '1D':
             return 1;
@@ -22,12 +22,14 @@ function getDaysForFilter(filter) {
             return 730;
         case '5Y':
             return 1825;
+        case 'MAX':
+            return 4650;
         default:
             return 365; // Default to 1 year
     }
 }
 
-export async function drawMarketChart(filter = '1Y') {
+export async function drawMarketChart(filter = '5Y') {
     const days = getDaysForFilter(filter);
     var { dates, prices } = await getPricesAndDates(days);
 
