@@ -1,10 +1,3 @@
-// crear proyeccion de estimacion del precio de una moneda
-// se necesitan 4 valores de entrada
-// 1. precio maximo de la estimacion
-// 2. precio minimo de la estimacion
-// 3. fecha de inicio de la estimacion
-// 4. fecha de fin de la estimacion
-// extra: id usuario y id moneda. obtenidos por contexto? token? bubble.io?
 export function createProjection(minPrice, maxPrice, startTime, endTime, userId, coinId) {
 
     if (minPrice > maxPrice) {
@@ -26,14 +19,3 @@ export function createProjection(minPrice, maxPrice, startTime, endTime, userId,
 
     return data;
 }
-
-
-// eliminar proyeccion de estimacion del precio de una moneda
-// se necesita el id de la proyeccion
-
-// editar proyeccion de estimacion del precio de una moneda
-// se necesita el id de la proyeccion y los 4 valores de entrada
-// 1. precio maximo de la estimacion
-// 2. precio minimo de la estimacion
-// 3. fecha de inicio de la estimacion
-// 4. fecha de fin de la estimacion

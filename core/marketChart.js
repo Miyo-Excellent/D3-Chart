@@ -1,4 +1,4 @@
-import { getPricesAndDates } from './apis/coinGecko/index.js';
+import { getPricesAndDates } from '../apis/coinGecko/index.js';
 
 export function getDaysForFilter(filter) {
     switch (filter) {
@@ -23,7 +23,8 @@ export function getDaysForFilter(filter) {
         case '5Y':
             return 1825;
         case 'MAX':
-            return 4650;
+            // max are 10 years
+            return 3650;
         default:
             return 365; // Default to 1 year
     }
@@ -33,6 +34,8 @@ export async function drawMarketChart(filter = '5Y') {
     const days = getDaysForFilter(filter);
     var { dates, prices } = await getPricesAndDates(days);
 
+    let maxHistoricValue = Math.max(...prices) * 1.3;
+
     var trace1 = {
         x: dates,
         y: prices,
@@ -41,14 +44,19 @@ export async function drawMarketChart(filter = '5Y') {
     };
 
     var layout = {
-        title: 'Valor de Mercado BTC',
+        // title: 'Valor de Mercado BTC',
         xaxis: {
-            title: 'Tiempo',
+            // title: 'Tiempo',
             type: 'date'
         },
         yaxis: {
-            title: 'Valor del Mercado',
-            range: [0, 100000]
+            // title: 'Valor del Mercado',
+            range: [0, maxHistoricValue],
+            // debe tener 8 ticks
+            tickmode: 'linear',
+            tick0: 0,
+            dtick: maxHistoricValue / 7,
+            tickformat: '$,.0f'
         },
         margin: {l: 50, r: 0, t: 20, b: 40},
     };

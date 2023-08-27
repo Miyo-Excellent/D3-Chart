@@ -1,6 +1,6 @@
-import { getLastPrice } from './apis/coinGecko/index.js';
-import { generateProjections } from './helpers/dummyData.js';
-import { generatePlotData } from './helpers/plotData.js';
+import { getLastPrice } from '../apis/coinGecko/index.js';
+import { generateProjections } from '../helpers/dummyData.js';
+import { generatePlotData } from '../helpers/plotData.js';
 
 // Fetch data from the CoinGecko API
 var lastPrice = await getLastPrice();
@@ -77,10 +77,10 @@ export async function drawPlot() {
     var endYear = new Date(currentDate.getFullYear() + 10, currentDate.getMonth(), currentDate.getDate()); // Añade 10 años a la fecha actual
 
     var layout = {
-        title: 'Proyecciones',
+        // title: 'Proyecciones',
         margin: { l: 0, r: 50, t: 20, b: 40 },
         xaxis: {
-            title: 'Tiempo',
+            // title: 'Tiempo',
             type: 'date',
             tickmode: 'linear', // Establece el modo de tick en 'linear'
             tick0: currentDate.toISOString(), // Comienza desde la fecha actual
@@ -89,7 +89,7 @@ export async function drawPlot() {
             tickformat: "%Y", // Muestra solamente el año en el eje X
         },
         yaxis: {
-            title: 'Valores',
+            // title: 'Valores',
             side: 'right',
             range: [0, 100000]
         },
