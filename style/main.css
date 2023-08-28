@@ -1,3 +1,11 @@
+/* imports from other style files located in the same folder */
+@import url('filters.css');
+@import url('header.css');
+
+body{
+    background-color:  #3C5164;
+}
+
 .chart-container {
     display: flex;
     height: 500px;

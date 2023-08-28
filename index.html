@@ -5,35 +5,50 @@
     <meta charset="utf-8">
     <title>Charts in Development</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="/style/main.css">
 </head>
 
 <body>
-    <div class="filters">
-        <div class="marketChartFilters">
-            <button id="marketChartFilter1D" onclick="drawMarketChart('1D')" class="marketChartFilter">1D</button>
-            <button id="marketChartFilter5D" onclick="drawMarketChart('5D')" class="marketChartFilter">5D</button>
-            <button id="marketChartFilter1M" onclick="drawMarketChart('1M')" class="marketChartFilter">1M</button>
-            <button id="marketChartFilter3M" onclick="drawMarketChart('3M')" class="marketChartFilter">3M</button>
-            <button id="marketChartFilter6M" onclick="drawMarketChart('6M')" class="marketChartFilter">6M</button>
-            <button id="marketChartFilterYTD" onclick="drawMarketChart('YTD')" class="marketChartFilter">YTD</button>
-            <button id="marketChartFilter1Y" onclick="drawMarketChart('1Y')" class="marketChartFilter">1Y</button>
-            <button id="marketChartFilter2Y" onclick="drawMarketChart('2Y')" class="marketChartFilter">2Y</button>
-            <button id="marketChartFilter5Y" onclick="drawMarketChart('5Y')" class="marketChartFilter">5Y</button>
-            <button id="marketChartFilterMAX" onclick="drawMarketChart('MAX')" class="marketChartFilter">MAX</button>
+
+    <div id="header">
+        <div id="coinLogoContainer">
+            <img id="coinLogo" src="https://via.placeholder.com/32" />
         </div>
-        <div class="projectionChartFilters">
-            <button id="openOutlooksFilter">Outlooks Filter</button>
-            <button id="filterByDone">D-ONE</button>
+        <div id="coinTextContainer">
+            <div id="coinNameContainer">
+                <span class="texto1">BITCOIN</span>
+            </div>
+            <div id="coinPriceContainer">
+                <span class="texto2">185.08</span>
+                <span class="texto3">USD</span>
+                <span class="texto4">+32.22</span>
+            </div>
         </div>
     </div>
-    <div style="width:100%; height:600px; position: relative;">
+
+    <div id="filters">
+        <div class="otherFilters">
+            <button id="openFilters">Filters</button>
+            <button id="openOutlooksFilter">Outlooks</button>
+        </div>
+        <div id="contextFilters">
+            <button id="historical" onclick="setContextFilter(0)">PAST</button>
+            <button id="hybrid" onclick="setContextFilter(1)" class="active">MIXED</button>
+            <button id="projection" onclick="setContextFilter(2)">FUTURE</button>
+        </div>
+        <div id="timeFilters">
+            <button id="marketChartFilter1D" onclick="setTimeFilter(1)">DAY</button>
+            <button id="marketChartFilter7D" onclick="setTimeFilter(7)">WEEK</button>
+            <button id="marketChartFilter1M" onclick="setTimeFilter(30)">MONTH</button>
+            <button id="marketChartFilter3M" onclick="setTimeFilter(90)">YTD</button>
+            <button id="marketChartFilter5Y" onclick="setTimeFilter(1825)">5 YEARS</button>
+            <button id="marketChartFilterMAX" onclick="setTimeFilter(3650)" class="active">10 YEARS (MAX)</button>
+        </div>
+    </div>
+
+    <div id="charts" style="width:100%; height:600px; position: relative;">
         <div id="marketChart" style="width:50%; height:100%;"></div>
-        <div id="projectionChart" style="position: absolute;
-        left: 50%;
-        top: 0;
-        width: 50%;
-        height: 100%;"></div>
+        <div id="projectionChart" style="position: absolute; left: 50%; top: 0; width: 50%; height: 100%;"></div>
     </div>
 
     <div id="projectionWindow" class="modal">

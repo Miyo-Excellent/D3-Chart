@@ -12,25 +12,28 @@ import { drawPlot } from './core/projectionChart.js';
 // the draw function will do that only draw the chart
 
 
-drawMarketChart();
-drawPlot();
+// get actual filter and context for the first load
 
-document.getElementById('openOutlooksFilter').addEventListener('click', function () {
-    document.getElementById('outlooksFilterModal').style.display = 'block';
-});
 
-// Eliminamos este bloque ya que no queremos cerrar el modal con un clic fuera del contenido
-// document.getElementById('outlooksFilterModal').addEventListener('click', function () {
+// drawMarketChart();
+// drawPlot();
+
+// document.getElementById('openOutlooksFilter').addEventListener('click', function () {
+//     document.getElementById('outlooksFilterModal').style.display = 'block';
+// });
+
+// // Eliminamos este bloque ya que no queremos cerrar el modal con un clic fuera del contenido
+// // document.getElementById('outlooksFilterModal').addEventListener('click', function () {
+// //     document.getElementById('outlooksFilterModal').style.display = 'none';
+// // });
+
+// document.getElementById('applyFilters').addEventListener('click', function () {
 //     document.getElementById('outlooksFilterModal').style.display = 'none';
 // });
 
-document.getElementById('applyFilters').addEventListener('click', function () {
-    document.getElementById('outlooksFilterModal').style.display = 'none';
-});
-
-// Cerrar el modal de filtros cuando se presiona la tecla "ESC"
-document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape') {
-        document.getElementById('outlooksFilterModal').style.display = 'none';
-    }
-});
+// // Cerrar el modal de filtros cuando se presiona la tecla "ESC"
+// document.addEventListener('keydown', function (event) {
+//     if (event.key === 'Escape') {
+//         document.getElementById('outlooksFilterModal').style.display = 'none';
+//     }
+// });

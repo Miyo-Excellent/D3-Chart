@@ -1,0 +1,49 @@
+#header {
+    display: flex;
+    flex-direction: row;
+    width: 193px;
+    height: 48px;
+    gap: 9px;
+    margin-bottom: 0.5rem;
+}
+
+#coinLogoContainer img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;  /* Para hacerlo redondo */
+}
+
+#coinTextContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#coinPriceContainer {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+}
+
+.texto1, .texto2 , .texto3, .texto4 {
+    font-family: Montserrat , sans-serif;
+    font-weight: 700;
+    line-height: 12px;
+    letter-spacing: 0em;
+    text-align: left;
+    color: #F3F3F4;
+    text-transform: uppercase;
+}
+
+.texto1, .texto3 , .texto4 {
+    font-size: 12px;
+}
+
+.texto2 {
+    font-size: 18px;
+}
+
+.texto4 {
+    color: #24C6C8;
+}
+
