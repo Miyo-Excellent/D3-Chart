@@ -10,7 +10,11 @@
 #coinLogoContainer img {
     width: 48px;
     height: 48px;
-    border-radius: 50%;  /* Para hacerlo redondo */
+    border-radius: 50%;
+}
+
+#coinNameContainer{
+    margin-bottom: 3px;
 }
 
 #coinTextContainer {
