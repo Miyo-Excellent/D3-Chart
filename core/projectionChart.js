@@ -1,15 +1,3 @@
-import { getLastPrice } from '../apis/coinGecko/index.js';
-import { generateProjections } from '../helpers/dummyData.js';
-import { generatePlotData } from '../helpers/plotData.js';
-
-// Fetch data from the CoinGecko API
-var lastPrice = await getLastPrice();
-
-// Generamos las proyecciones
-var projections = generateProjections();
-
-// Generamos la data para el gráfico
-var plotData = generatePlotData(projections, lastPrice);
 function formatDate(dateString) {
     const date = new Date(dateString);
     const year = date.getFullYear();
@@ -72,7 +60,7 @@ window.closeModal = function () {
     document.getElementById('projectionWindow').style.display = 'none';
 }
 
-export async function drawPlot() {
+export async function drawPlot(plotData, highestPrice, todayPrice) {
     var currentDate = new Date(); // Obtiene la fecha actual
     var endYear = new Date(currentDate.getFullYear() + 10, currentDate.getMonth(), currentDate.getDate()); // Añade 10 años a la fecha actual
 
@@ -80,10 +68,10 @@ export async function drawPlot() {
         // title: 'Proyecciones',
         margin: { l: 0, r: 50, t: 20, b: 40 },
         xaxis: {
-            // title: 'Tiempo',
             type: 'date',
             tickmode: 'linear', // Establece el modo de tick en 'linear'
             tick0: currentDate.toISOString(), // Comienza desde la fecha actual
+            // deben haber 10 ticks
             dtick: 31536000000, // Intervalo de 1 año en milisegundos
             range: [currentDate.toISOString(), endYear.toISOString()], // Rango desde la fecha actual hasta 10 años después
             tickformat: "%Y", // Muestra solamente el año en el eje X
@@ -91,7 +79,11 @@ export async function drawPlot() {
         yaxis: {
             // title: 'Valores',
             side: 'right',
-            range: [0, 100000]
+            range: [0, highestPrice],
+            tickmode: 'linear',
+            tick0: 0,
+            dtick: highestPrice / 10,
+            tickformat: '$,.0f'
         },
         dragmode: 'select',
         shapes: [
@@ -99,9 +91,9 @@ export async function drawPlot() {
                 type: 'line',
                 xref: 'paper',
                 x0: 0,
-                y0: lastPrice,
+                y0: todayPrice,
                 x1: 1,
-                y1: lastPrice,
+                y1: todayPrice,
                 line: {
                     color: 'HotPink',
                     width: 1

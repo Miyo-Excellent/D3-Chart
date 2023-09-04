@@ -30,6 +30,7 @@
 
 
 export function getMarketData(days) {
+    console.log('Executing getMarketData');
     return fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=${days}`)
         .then(response => response.json())
         .then(data => {

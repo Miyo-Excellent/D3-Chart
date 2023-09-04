@@ -2,8 +2,8 @@ import { setContextFilter, setTimeFilter } from './core/filters.js';
 import { drawManager } from './core/drawCharts.js';
 
 // Valores iniciales
-const initialContext = 0;
-const initialTime = 7;
+const initialContext = 1;
+const initialTime = 3650;
 const initialCurrency = 'AAPL';
 
 // Dibujo inicial
@@ -11,7 +11,7 @@ drawManager(initialContext, initialTime, initialCurrency);
 
 // Escuchadores de eventos para los filtros
 document.getElementById('contextFilters').addEventListener('click', (event) => {
-    const newContext = event.target.dataset.value;
+    const newContext = parseInt(event.target.dataset.value)
     setContextFilter(newContext);  // Llama a la función desde core/filters.js
     drawManager(newContext, initialTime);
 });

@@ -1,4 +1,9 @@
 import { getMarketData } from '../apis/alphaVantage/index.js';
+import { drawMarketChart } from './marketChart.js';
+import { drawPlot } from './projectionChart.js';
+import { generateProjections } from '../helpers/dummyData.js';
+import { generatePlotData } from '../helpers/plotData.js';
+
 /**
  * @function drawManager
  * @description Gestiona el dibujo de los gráficos en función de los filtros de contexto y tiempo seleccionados.
@@ -14,24 +19,47 @@ import { getMarketData } from '../apis/alphaVantage/index.js';
  * // Dibuja los gráficos con el filtro de contexto "0" = "Market" y el filtro de tiempo "30" = "1 month".
  */
 
-export const drawManager = (contextIndex, timeDays, currency) => {
+export const drawManager = async (contextIndex, timeDays, currency) => {
     console.log('drawManager charts with context: ' + contextIndex + ' and time: ' + timeDays + ' and currency: ' + currency);
+
+    let marketData = {
+        dates: [],
+        prices: []
+    }
+
+    let highestPrice = 0;
+
+    let projections = [];
+    let plotData = [];
+
     switch (contextIndex) {
         case 0:
+            console.log('Initializing Market Chart...');
             // Market
-            let marketData = getMarketData(timeDays);
-            console.log(marketData);
+            marketData = await getMarketData(timeDays);
+            highestPrice = Math.max(...marketData.prices) * 1.3;
+            drawMarketChart(marketData.dates, marketData.prices, highestPrice);
             break;
         case 1:
-            // Hibrid
-            // getMarketData(timeDays);
-            // getOutlookData(timeDays);
+            console.log('Initializing Hybrid Chart...');
+            // Hybrid
+            marketData = await getMarketData(timeDays);
+            highestPrice = Math.max(...marketData.prices) * 1.3;
+            drawMarketChart(marketData.dates, marketData.prices, highestPrice);
+
+            let todayPrice = marketData.prices[marketData.prices.length - 1];
+
+            projections = generateProjections();
+            plotData = generatePlotData(projections, todayPrice);
+            
+            drawPlot(plotData, highestPrice, todayPrice);
             break;
         case 2:
-            // Outlook
-            // getOutlookData(timeDays);
+            console.log('Initializing Outlooks Chart...');
+            // Outlooks
+            drawPlot();
             break;
         default:
-            console.log('Error: contextIndex out of range');
+            console.log('Error: contextIndex out of range: ' + contextIndex);
     }
 };
