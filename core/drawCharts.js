@@ -20,7 +20,12 @@ import { generatePlotData } from '../helpers/plotData.js';
  */
 
 export const drawManager = async (contextIndex, timeDays, currency) => {
-    console.log('drawManager charts with context: ' + contextIndex + ' and time: ' + timeDays + ' and currency: ' + currency);
+    console.log('drawManager charts with context:',
+    {
+        contextIndex: contextIndex,
+        timeDays: timeDays,
+        currency: currency
+    });
 
     let marketData = {
         dates: [],
@@ -35,6 +40,7 @@ export const drawManager = async (contextIndex, timeDays, currency) => {
     switch (contextIndex) {
         case 0:
             console.log('Initializing Market Chart...');
+            showOnlyMarketChart();
             // Market
             marketData = await getMarketData(timeDays);
             highestPrice = Math.max(...marketData.prices) * 1.3;
@@ -42,6 +48,7 @@ export const drawManager = async (contextIndex, timeDays, currency) => {
             break;
         case 1:
             console.log('Initializing Hybrid Chart...');
+            showBothCharts();
             // Hybrid
             marketData = await getMarketData(timeDays);
             highestPrice = Math.max(...marketData.prices) * 1.3;
@@ -56,10 +63,41 @@ export const drawManager = async (contextIndex, timeDays, currency) => {
             break;
         case 2:
             console.log('Initializing Outlooks Chart...');
+            showOnlyProjectionChart();
             // Outlooks
-            drawPlot();
+            projections = generateProjections();
+
+            highestPrice = Math.max(...projections.map(projection => projection.price)) * 1.3;
+
+            plotData = generatePlotData(projections, 0);
+            drawPlot(plotData, highestPrice, 0);
             break;
         default:
             console.log('Error: contextIndex out of range: ' + contextIndex);
     }
 };
+
+
+const showOnlyMarketChart = () => {
+    document.getElementById('marketChart').style.display = 'block';
+    document.getElementById('marketChart').style.width = '100%';
+    document.getElementById('projectionChart').style.display = 'none';
+};
+
+const showBothCharts = () => {
+    document.getElementById('marketChart').style.display = 'block';
+    document.getElementById('marketChart').style.width = '50%';
+    document.getElementById('projectionChart').style.display = 'block';
+    document.getElementById('projectionChart').style.left = '50%';
+    document.getElementById('projectionChart').style.width = '50%';
+};
+
+const showOnlyProjectionChart = () => {
+    document.getElementById('marketChart').style.display = 'none';
+    document.getElementById('projectionChart').style.display = 'block';
+    document.getElementById('projectionChart').style.left = '0';
+    document.getElementById('projectionChart').style.width = '100%';
+};
+
+
+
