@@ -32,19 +32,21 @@
             <button id="openOutlooksFilter">Outlooks</button>
         </div>
         <div id="contextFilters">
-            <button id="historical" onclick="setContextFilter(0)">PAST</button>
-            <button id="hybrid" onclick="setContextFilter(1)" class="active">MIXED</button>
-            <button id="projection" onclick="setContextFilter(2)">FUTURE</button>
+            <button data-value="0">PAST</button>
+            <button data-value="1" class="active">MIXED</button>
+            <button data-value="2">FUTURE</button>
         </div>
         <div id="timeFilters">
-            <button id="marketChartFilter1D" onclick="setTimeFilter(1)">DAY</button>
-            <button id="marketChartFilter7D" onclick="setTimeFilter(7)">WEEK</button>
-            <button id="marketChartFilter1M" onclick="setTimeFilter(30)">MONTH</button>
-            <button id="marketChartFilter3M" onclick="setTimeFilter(90)">YTD</button>
-            <button id="marketChartFilter5Y" onclick="setTimeFilter(1825)">5 YEARS</button>
-            <button id="marketChartFilterMAX" onclick="setTimeFilter(3650)" class="active">10 YEARS (MAX)</button>
+            <button data-value="1">DAY</button>
+            <button data-value="7">WEEK</button>
+            <button data-value="30">MONTH</button>
+            <button data-value="90">YTD</button>
+            <button data-value="1825">5 YEARS</button>
+            <button data-value="3650" class="active">10 YEARS (MAX)</button>
         </div>
+        
     </div>
+    
 
     <div id="charts" style="width:100%; height:600px; position: relative;">
         <div id="marketChart" style="width:50%; height:100%;"></div>

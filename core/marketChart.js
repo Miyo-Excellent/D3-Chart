@@ -1,4 +1,4 @@
-import { getPricesAndDates } from '../apis/coinGecko/index.js';
+import { getPricesAndDates } from '../apis/alphaVantage/index.js';
 
 export function getDaysForFilter(filter) {
     switch (filter) {
