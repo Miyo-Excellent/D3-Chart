@@ -89,7 +89,7 @@ export async function drawPlot(plotData, highestPrice, todayPrice) {
             tickformat: '$,.0f',
             linecolor: '#FFFFFF',  // Color de la línea del eje Y
             linewidth: 1,
-            gridcolor: 'gray',  // Color de las líneas de la cuadrícula
+            gridcolor: '#ECECEC',  // Color de las líneas de la cuadrícula
         },
         dragmode: 'select',
         shapes: [

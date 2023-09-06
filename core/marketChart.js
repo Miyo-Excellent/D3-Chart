@@ -45,7 +45,7 @@ export async function drawMarketChart(dates, prices, highestPrice) {
             },
             linecolor: '#293C4B',  // Color de la línea del eje Y
             linewidth: 1,
-            gridcolor: 'gray',  // Color de las líneas de la cuadrícula
+            gridcolor: '#ECECEC',  // Color de las líneas de la cuadrícula
         },
         margin: { l: 50, r: 0, t: 20, b: 40,  },
     };
