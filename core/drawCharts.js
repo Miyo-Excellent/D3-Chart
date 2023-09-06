@@ -32,7 +32,10 @@ export const drawManager = async (contextIndex, timeDays, currency) => {
         prices: []
     }
 
-    let highestPrice = 0;
+    let highestMarketPrice = 0;
+    let highestOutlookPrice = 0;
+    let todayPrice = 0;
+    let limitPrice = 0;
 
     let projections = [];
     let plotData = [];
@@ -43,34 +46,61 @@ export const drawManager = async (contextIndex, timeDays, currency) => {
             showOnlyMarketChart();
             // Market
             marketData = await getMarketData(timeDays);
-            highestPrice = Math.max(...marketData.prices) * 1.3;
-            drawMarketChart(marketData.dates, marketData.prices, highestPrice);
+            todayPrice = marketData.prices[marketData.prices.length - 1];
+            highestMarketPrice = Math.max(...marketData.prices);
+
+            // Limit
+            limitPrice = highestMarketPrice > todayPrice * 3 ? todayPrice * 3 : highestMarketPrice * 1.3;
+
+            console.log('highestMarketPrice: ', highestMarketPrice);
+            console.log('todayPrice: ', todayPrice);
+            console.log('limitPrice: ', limitPrice);
+            
+            // Draw
+            drawMarketChart(marketData.dates, marketData.prices, limitPrice);
             break;
         case 1:
             console.log('Initializing Hybrid Chart...');
             showBothCharts();
             // Hybrid
+
+            // Market
             marketData = await getMarketData(timeDays);
-            highestPrice = Math.max(...marketData.prices) * 1.3;
-            drawMarketChart(marketData.dates, marketData.prices, highestPrice);
+            highestMarketPrice = Math.max(...marketData.prices) ;
+            todayPrice = marketData.prices[marketData.prices.length - 1];
 
-            let todayPrice = marketData.prices[marketData.prices.length - 1];
-
-            projections = generateProjections();
-            plotData = generatePlotData(projections, todayPrice);
+            console.log('highestMarketPrice: ', highestMarketPrice);
+            console.log('todayPrice: ', todayPrice);
             
-            drawPlot(plotData, highestPrice, todayPrice);
+            // Outlooks
+            projections = generateProjections(); // dummy change to real data integration
+            highestOutlookPrice = Math.max(...projections.map(projection => projection.maxPrice));
+
+            console.log('highestOutlookPrice: ', highestOutlookPrice);
+            
+            // Limit
+            limitPrice = Math.max(highestMarketPrice, highestOutlookPrice) > todayPrice * 3  ? todayPrice * 3 : Math.max(highestMarketPrice, highestOutlookPrice) * 1.3;
+
+            console.log('limitPrice: ', limitPrice);
+
+            // Draw
+            drawMarketChart(marketData.dates, marketData.prices, limitPrice);
+            plotData = generatePlotData(projections, todayPrice); // dummy change to real data integration
+            drawPlot(plotData, limitPrice, todayPrice);
             break;
         case 2:
             console.log('Initializing Outlooks Chart...');
             showOnlyProjectionChart();
             // Outlooks
             projections = generateProjections();
+            highestOutlookPrice = Math.max(...projections.map(projection => projection.price));
 
-            highestPrice = Math.max(...projections.map(projection => projection.price)) * 1.3;
+            limit = highestOutlookPrice > todayPrice * 3 ? todayPrice * 3 : highestOutlookPrice * 1.3;
 
-            plotData = generatePlotData(projections, 0);
-            drawPlot(plotData, highestPrice, 0);
+            console.log('highestOutlookPrice: ', highestOutlookPrice);
+
+            plotData = generatePlotData(projections, 0); // dummy change to real data integration
+            drawPlot(plotData, highestOutlookPrice, 0);
             break;
         default:
             console.log('Error: contextIndex out of range: ' + contextIndex);

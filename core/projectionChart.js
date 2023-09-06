@@ -75,6 +75,9 @@ export async function drawPlot(plotData, highestPrice, todayPrice) {
             dtick: 31536000000, // Intervalo de 1 año en milisegundos
             range: [currentDate.toISOString(), endYear.toISOString()], // Rango desde la fecha actual hasta 10 años después
             tickformat: "%Y", // Muestra solamente el año en el eje X
+            linecolor: '#FFFFFF',  // Color de la línea del eje Y
+            linewidth: 1,
+            gridcolor: '#FFFFFF',  // Color de las líneas de la cuadrícula
         },
         yaxis: {
             // title: 'Valores',
@@ -83,7 +86,10 @@ export async function drawPlot(plotData, highestPrice, todayPrice) {
             tickmode: 'linear',
             tick0: 0,
             dtick: highestPrice / 10,
-            tickformat: '$,.0f'
+            tickformat: '$,.0f',
+            linecolor: '#FFFFFF',  // Color de la línea del eje Y
+            linewidth: 1,
+            gridcolor: 'gray',  // Color de las líneas de la cuadrícula
         },
         dragmode: 'select',
         shapes: [
@@ -100,7 +106,11 @@ export async function drawPlot(plotData, highestPrice, todayPrice) {
                 }
             }
         ],
-        showlegend: false
+        showlegend: false,
+        font: {
+            family: 'Montserrat, sans-serif', // Fuente general
+            size: 12,                      // Tamaño de fuente general
+        },
     };
 
     Plotly.newPlot('projectionChart', plotData, layout);

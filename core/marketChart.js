@@ -23,8 +23,8 @@ export async function drawMarketChart(dates, prices, highestPrice) {
                 size: 12,
                 color: '#FFFFFF'
             },
-            linecolor: '#FFFFFF',  // Color de la línea del eje Y
-            linewidth: -1,
+            linecolor: '#293C4B',  // Color de la línea del eje Y
+            linewidth: 1,
             // gridcolor: '#FFFFFF',  // Color de las líneas de la cuadrícula
         },
         font: {
@@ -43,9 +43,9 @@ export async function drawMarketChart(dates, prices, highestPrice) {
                 size: 12,
                 color: '#FFFFFF'
             },
-            linecolor: '#FFFFFF',  // Color de la línea del eje Y
-            linewidth: -1,
-            gridcolor: '#FFFFFF',  // Color de las líneas de la cuadrícula
+            linecolor: '#293C4B',  // Color de la línea del eje Y
+            linewidth: 1,
+            gridcolor: 'gray',  // Color de las líneas de la cuadrícula
         },
         margin: { l: 50, r: 0, t: 20, b: 40,  },
     };
