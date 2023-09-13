@@ -90,17 +90,28 @@ export const drawManager = async (contextIndex, timeDays, currency) => {
             break;
         case 2:
             console.log('Initializing Outlooks Chart...');
+
+            // Market
+            marketData = await getMarketData(timeDays);
+            todayPrice = marketData.prices[marketData.prices.length - 1];
+
             showOnlyProjectionChart();
             // Outlooks
             projections = generateProjections();
-            highestOutlookPrice = Math.max(...projections.map(projection => projection.price));
+            highestOutlookPrice = Math.max(...projections.map(projection => projection.maxPrice));
 
-            limit = highestOutlookPrice > todayPrice * 3 ? todayPrice * 3 : highestOutlookPrice * 1.3;
+            console.log('todayPrice: ', todayPrice);
+            console.log('highestOutlookPrice: ', highestOutlookPrice);
+
+
+            limitPrice = highestOutlookPrice > todayPrice * 3 ? todayPrice * 3 : highestOutlookPrice * 1.3;
+
+            console.log('limitPrice: ', limitPrice);
 
             console.log('highestOutlookPrice: ', highestOutlookPrice);
 
-            plotData = generatePlotData(projections, 0); // dummy change to real data integration
-            drawPlot(plotData, highestOutlookPrice, 0);
+            plotData = generatePlotData(projections, todayPrice); // dummy change to real data integration
+            drawPlot(plotData, limitPrice, todayPrice);
             break;
         default:
             console.log('Error: contextIndex out of range: ' + contextIndex);
