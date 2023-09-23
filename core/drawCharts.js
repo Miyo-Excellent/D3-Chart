@@ -51,10 +51,6 @@ export const drawManager = async (contextIndex, timeDays, currency) => {
 
             // Limit
             limitPrice = highestMarketPrice > todayPrice * 3 ? todayPrice * 3 : highestMarketPrice * 1.3;
-
-            console.log('highestMarketPrice: ', highestMarketPrice);
-            console.log('todayPrice: ', todayPrice);
-            console.log('limitPrice: ', limitPrice);
             
             // Draw
             drawMarketChart(marketData.dates, marketData.prices, limitPrice);
@@ -68,21 +64,13 @@ export const drawManager = async (contextIndex, timeDays, currency) => {
             marketData = await getMarketData(timeDays);
             highestMarketPrice = Math.max(...marketData.prices) ;
             todayPrice = marketData.prices[marketData.prices.length - 1];
-
-            console.log('highestMarketPrice: ', highestMarketPrice);
-            console.log('todayPrice: ', todayPrice);
             
             // Outlooks
             projections = generateProjections(); // dummy change to real data integration
             highestOutlookPrice = Math.max(...projections.map(projection => projection.maxPrice));
-
-            console.log('highestOutlookPrice: ', highestOutlookPrice);
             
             // Limit
             limitPrice = Math.max(highestMarketPrice, highestOutlookPrice) > todayPrice * 3  ? todayPrice * 3 : Math.max(highestMarketPrice, highestOutlookPrice) * 1.3;
-
-            console.log('limitPrice: ', limitPrice);
-
             // Draw
             drawMarketChart(marketData.dates, marketData.prices, limitPrice);
             plotData = generatePlotData(projections, todayPrice); // dummy change to real data integration
@@ -100,15 +88,7 @@ export const drawManager = async (contextIndex, timeDays, currency) => {
             projections = generateProjections();
             highestOutlookPrice = Math.max(...projections.map(projection => projection.maxPrice));
 
-            console.log('todayPrice: ', todayPrice);
-            console.log('highestOutlookPrice: ', highestOutlookPrice);
-
-
             limitPrice = highestOutlookPrice > todayPrice * 3 ? todayPrice * 3 : highestOutlookPrice * 1.3;
-
-            console.log('limitPrice: ', limitPrice);
-
-            console.log('highestOutlookPrice: ', highestOutlookPrice);
 
             plotData = generatePlotData(projections, todayPrice); // dummy change to real data integration
             drawPlot(plotData, limitPrice, todayPrice);

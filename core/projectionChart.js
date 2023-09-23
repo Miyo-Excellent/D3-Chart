@@ -1,64 +1,6 @@
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Asegúrate de que el mes tenga dos dígitos
-    return `${year}-${month}`;
-}
-
-function formatValue(value) {
-    if (value >= 1000) {
-        return (value / 1000).toFixed(0) + 'K'; // Redondea sin decimales y añade 'K'
-    }
-    return value.toFixed(0); // Redondea sin decimales
-}
 
 
-function openProjectionWindow(xRange, yRange) {
-    const formattedXRange = xRange.map(date => formatDate(date));
-    const formattedYRange = yRange.map(value => formatValue(value) + ' BTC');
-
-    document.getElementById('projectionDetails').innerHTML =
-        '<div class="container">' +
-        '<div class="first-child">' +
-        '<div>' +
-        '<img src="https://via.placeholder.com/32" alt="Avatar" class="avatar">' +
-        '</div>' +
-        '<div>' +
-        '<div class="d-block ml-5">Monica Smith</div>' +
-        '<div class="d-block ml-5">Asesora de marketing digital</div>' +
-        '</div>' +
-        '<div>' +
-        '</div>' +
-        '</div>' +
-        '<div class="second-child">' +
-        '<div class="w-50">' +
-        '<div>PRICE RANGE</div>' +
-        '<div>' + formattedYRange[0] + ' - ' + formattedYRange[1] + '</div>' +
-        '</div>' +
-        '<div class="w-50">' +
-        '<div>TIME RANGE</div>' +
-        '<div>' + formattedXRange[0] + ' - ' + formattedXRange[1] + '</div>' +
-        '</div>' +
-        '</div>' +
-        '</div>';
-    document.getElementById('projectionWindow').style.display = 'block'; // Cambiado a 'block' para mostrar el modal
-}
-
-// Cerrar el modal cuando se hace clic en cualquier lugar fuera del contenido del modal
-document.getElementById('projectionWindow').addEventListener('click', function (event) {
-    if (!event.target.closest('#projectionDetails')) {
-        document.getElementById('projectionWindow').style.display = 'none';
-    }
-});
-
-
-document.getElementById('projectionDetails').addEventListener('click', function (event) {
-    event.stopPropagation();
-});
-
-window.closeModal = function () {
-    document.getElementById('projectionWindow').style.display = 'none';
-}
+// Función que dibuja el gráfico de proyecciones
 
 export async function drawPlot(plotData, highestPrice, todayPrice) {
     var currentDate = new Date(); // Obtiene la fecha actual
@@ -114,17 +56,4 @@ export async function drawPlot(plotData, highestPrice, todayPrice) {
     };
 
     Plotly.newPlot('projectionChart', plotData, layout);
-
-    var myPlot = document.getElementById('projectionChart');
-
-    myPlot.on('plotly_selected', function (eventData) {
-        if (eventData) {
-            var xRange = eventData.range.x;
-            var yRange = eventData.range.y;
-
-            openProjectionWindow(xRange, yRange); // Llama a la función para abrir la ventana
-        }
-    });
 }
-
-drawPlot();
