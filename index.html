@@ -4,12 +4,14 @@
 <head>
     <meta charset="utf-8">
     <title>Charts in Development</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <link rel="stylesheet" type="text/css" href="/style/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap" rel="stylesheet">
+
 </head>
 
 <body>
-
+    <!-- 
     <div id="header">
         <div id="coinLogoContainer">
             <img id="coinLogo" src="https://via.placeholder.com/32" />
@@ -45,14 +47,16 @@
             <button id="openOutlooksFilter">Outlooks</button>
         </div>
     </div>
-    
+     -->
 
     <div id="charts" style="width:100%; height:600px; position: relative;">
         <div id="marketChart" style="width:50%; height:100%;"></div>
         <div id="projectionChart" style="position: absolute; left: 50%; top: 0; width: 50%; height: 100%;"></div>
     </div>
 
-    <div id="projectionWindow" class="modal">
+
+
+    <!-- <div id="projectionWindow" class="modal">
         <div id="projectionDetails" class="modal-content">
         </div>
     </div>
@@ -82,7 +86,7 @@
             </div>
             <button id="applyFilters">Apply</button>
         </div>
-    </div>
+    </div> -->
 
     <script type="module" src="main.js"></script>
 </body>
