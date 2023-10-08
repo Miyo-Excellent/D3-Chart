@@ -1,4 +1,4 @@
-import { randomDate, randomValue } from './index.js';
+import { randomValue } from './index.js';
 
 export function generateProjections() {
     var projections = [];
