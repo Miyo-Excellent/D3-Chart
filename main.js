@@ -14,8 +14,8 @@ async function drawChart() {
   const innerCircleRadius = 4.5; // ajusta este valor según el tamaño del círculo interior
 
 
-  const width = 1980;
-  const height = 500;
+  const width = 1920;
+  const height = 540;
   const margin = { top: 20, right: 50, bottom: 50, left: 70 }; // Modificado el valor de right para que no se corten los ticks
 
   const svg = d3.select('#marketChart').append('svg')
