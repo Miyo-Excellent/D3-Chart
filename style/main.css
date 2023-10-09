@@ -40,13 +40,13 @@ body{
     height: 100%;
     overflow: auto;
     background-color: rgba(0, 0, 0, 0.4);
-    z-index: 1000; /* Asegura que el modal esté por encima de otros elementos */
+    z-index: 1000; 
 }
 
 .modal-content {
     position: absolute;
-    width: 270px; /* Ancho del modal */
-    height: 123px; /* Altura del modal */
+    width: 270px; 
+    height: 123px;
     top: 285px;
     left: 728px;
     padding: 16px 24px;
@@ -83,8 +83,8 @@ body{
 .modal-content .container .second-child {
     display: flex;
     flex-direction: row;
-    justify-content: center; /* Centra horizontalmente */
-    align-items: center; /* Centra verticalmente */
+    justify-content: center; 
+    align-items: center;
     font-family: 'Montserrat', sans-serif;
     font-size: 10px;
     font-weight: 700;
@@ -94,7 +94,7 @@ body{
 
 .w-50 {
     width: 50%;
-    text-align: center; /* Centra el texto dentro de los elementos de .w-50 */
+    text-align: center; 
 }
 
 .close {
@@ -127,12 +127,12 @@ body{
     height: 100%;
     overflow: auto;
     background-color: rgba(0, 0, 0, 0.4);
-    z-index: 1000; /* Asegura que el modal esté por encima de otros elementos */
+    z-index: 1000;
 }
 
 .filter-modal-content {
     position: absolute;
-    width: 400px; /* Ancho del modal */
+    width: 400px; 
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);

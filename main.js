@@ -8,23 +8,17 @@ async function drawChart() {
     close: prices[index]
   }));
 
-  // MARCADOR DEL VALOR ACTUAL
   const lastDatum = data[data.length - 1];
-  const outerRingRadius = 9; // ajusta este valor según el grosor del anillo exterior
-  const innerCircleRadius = 4.5; // ajusta este valor según el tamaño del círculo interior
+  const outerRingRadius = 9;
+  const innerCircleRadius = 4.5;
 
-
-  const width = 1920;
+  const width = 1450;
   const height = 540;
-  const margin = { top: 20, right: 50, bottom: 50, left: 70 }; // Modificado el valor de right para que no se corten los ticks
+  const margin = { top: 20, right: 50, bottom: 50, left: 70 };
 
   const svg = d3.select('#marketChart').append('svg')
     .attr('width', width)
-    .attr('height', height)
-    .style('background-color', '#293C4B')
-    .style('border-radius', '10px');
-
-  // Configuración del gráfico histórico (izquierdo)
+    .attr('height', height);
 
   const xHistorical = d3.scaleUtc()
     .domain(d3.extent(data, d => d.date))
@@ -34,6 +28,17 @@ async function drawChart() {
     .domain([0, d3.max(data, d => d.close)])
     .range([height - margin.bottom, margin.top])
     .nice();
+
+  // Líneas horizontales para ambos gráficos
+  const yAxisGrid = svg.append('g')
+    .attr('transform', `translate(${margin.left},0)`);
+  yAxisGrid
+    .call(d3.axisLeft(yHistorical).tickSize(-(width - margin.left - margin.right)).tickFormat(''))
+    .selectAll('.tick line')
+    .attr('stroke', '#3A4B59');
+
+  yAxisGrid.select(".domain").remove();
+  yAxisGrid.lower();
 
   const lineHistorical = d3.line()
     .x(d => xHistorical(d.date))
@@ -46,8 +51,16 @@ async function drawChart() {
     .attr('stroke-width', 1.5)
     .attr('d', lineHistorical);
 
-  // PATRON
+  svg.append('rect')
+    .attr('x', margin.left)
+    .attr('y', margin.top)
+    .attr('width', width / 2 - margin.left)
+    .attr('height', height - margin.top - margin.bottom)
+    .attr('fill', '#293C4B')
+    // .attr('rx', 10)
+    .lower();
 
+  // Patron linea divisioria
   const defs = svg.append("defs");
 
   const pattern = defs.append("pattern")
@@ -70,7 +83,6 @@ async function drawChart() {
 
 
   // Configuración del gráfico de proyecciones (derecho)
-
   svg.append("line")
     .attr("x1", width / 2)
     .attr("y1", margin.top)
@@ -106,38 +118,47 @@ async function drawChart() {
     .attr('fill', 'white');
 
   // Ejes X para ambos gráficos
-  svg.append('g')
+  const xAxisHistorical = svg.append('g')
     .attr('transform', `translate(0,${height - margin.bottom})`)
     .call(d3.axisBottom(xHistorical).tickSize(0))
-    .attr('stroke-opacity', 0) // Añade esta línea
-    .selectAll("text") // Selecciona todos los textos del eje
-    .attr("dy", "1.5em"); // Mueve los textos hacia abajo
+    .attr('stroke-opacity', 0)
+    .selectAll("text")
+    .attr("dy", "1.5em");
+
+  xAxisHistorical.select(".domain").remove();
 
 
-  svg.append('g')
+  const xAxisProjection = svg.append('g')
     .attr('transform', `translate(0,${height - margin.bottom})`)
     .call(d3.axisBottom(xProjection).tickSize(0))
-    .attr('stroke-opacity', 0) // Añade esta línea
-    .selectAll("text") // Selecciona todos los textos del eje
-    .attr("dy", "1.5em"); // Mueve los textos hacia abajo
+    .attr('stroke-opacity', 0)
+    .selectAll("text")
+    .attr("dy", "1.5em");
 
+  xAxisProjection.select(".domain").remove();
 
-  // Ejes Y para ambos gráficos
-  svg.append('g')
+  const formatYAxis = d => `$${d3.format(".2s")(d)}`;
+
+  const yAxisLeft = svg.append('g')
     .attr('transform', `translate(${margin.left},0)`)
-    .call(d3.axisLeft(yHistorical).tickSize(0).tickFormat(d3.format(".2s")));
+    .call(d3.axisLeft(yHistorical).tickSize(0).tickFormat(formatYAxis).ticks(10));
 
+  yAxisLeft.select(".domain").remove();
 
-
+  yAxisLeft.selectAll("text")
+    .attr("dx", "-0.8em");
 
   const yAxisRight = svg.append('g')
     .attr('transform', `translate(${width - margin.right},0)`)
-    .call(d3.axisRight(yHistorical).tickSize(-(width - width / 2 - margin.right)).tickFormat(d3.format(".2s")));
+    .call(d3.axisRight(yHistorical).tickSize(-(width - width / 2 - margin.right)).tickFormat(formatYAxis).ticks(10));
 
-
+  yAxisRight.selectAll("text")
+    .attr("dx", "0.8em");
 
   yAxisRight.selectAll('.tick line')
     .attr('stroke', '#ECECEC');
+
+  yAxisRight.select(".domain").remove();
 
   // Estilo de los labels de los ejes
   svg.selectAll("g > text")
@@ -194,15 +215,6 @@ async function drawChart() {
     .attr('cy', yHistorical(lastDatum.close))
     .attr('r', innerCircleRadius)
     .attr('fill', '#17A2B8');
-
-  // Líneas horizontales para ambos gráficos
-  const yAxisGrid = svg.append('g')
-    .attr('transform', `translate(${margin.left},0)`);
-  yAxisGrid
-    .call(d3.axisLeft(yHistorical).tickSize(-(width - margin.left - margin.right)).tickFormat('')) // Ajustado para todo el ancho
-    .selectAll('.tick line')
-    .attr('stroke', '#3A4B59');
-  yAxisGrid.lower();
 }
 
 drawChart();
