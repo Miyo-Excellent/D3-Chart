@@ -14,7 +14,7 @@ async function drawChart() {
 
   const width = 1450;
   const height = 540;
-  const margin = { top: 20, right: 50, bottom: 50, left: 70 };
+  const margin = { top: 20, right: 70, bottom: 50, left: 70 };
 
   const svg = d3.select('#marketChart').append('svg')
     .attr('width', width)
@@ -27,13 +27,26 @@ async function drawChart() {
   const yHistorical = d3.scaleLinear()
     .domain([0, d3.max(data, d => d.close)])
     .range([height - margin.bottom, margin.top])
-    .nice();
+  // .nice();
+
+  // Calcula el valor máximo ajustado
+  const max = d3.max(data, d => d.close);
+  const adjustedMax = max * 1.3;  // 30% más alto que el máximo
+
+  // Ajusta el dominio de la escala yHistorical
+  yHistorical.domain([0, adjustedMax]);
+
+  // Calcula los tickValues
+  const tickInterval = adjustedMax / 9;  // 9 intervalos para crear 10 ticks
+  const tickValues = Array.from({ length: 10 }, (_, i) => i * tickInterval);
+
 
   // Líneas horizontales para ambos gráficos
   const yAxisGrid = svg.append('g')
     .attr('transform', `translate(${margin.left},0)`);
+
   yAxisGrid
-    .call(d3.axisLeft(yHistorical).tickSize(-(width - margin.left - margin.right)).tickFormat(''))
+    .call(d3.axisLeft(yHistorical).tickSize(-(width - margin.left - margin.right)).tickFormat('').tickValues(tickValues))
     .selectAll('.tick line')
     .attr('stroke', '#3A4B59');
 
@@ -81,7 +94,6 @@ async function drawChart() {
     .attr("transform", "translate(0,5)")
     .attr("fill", "white");  // color del fondo del gráfico derecho
 
-
   // Configuración del gráfico de proyecciones (derecho)
   svg.append("line")
     .attr("x1", width / 2)
@@ -91,9 +103,15 @@ async function drawChart() {
     .attr("stroke", "url(#splitPattern)")
     .attr("stroke-width", "2");
 
-  const projectionData = []; // Sin datos por el momento
-
   const today = new Date();
+
+  const generateProjections = generateDummyProjectionsData(today, '2033-01-01', lastDatum.close);
+  const projectionData = generateProjections.map(p => ({
+    startDate: new Date(p.start_date),
+    endDate: new Date(p.end_date),
+    minValue: p.min_value,
+    maxValue: p.max_value
+  }));
 
   const xProjection = d3.scaleUtc()
     .domain([today, d3.utcYear.offset(today, 10)]) // Asume 10 años de proyecciones
@@ -123,7 +141,7 @@ async function drawChart() {
     .call(d3.axisBottom(xHistorical).tickSize(0))
     .attr('stroke-opacity', 0)
     .selectAll("text")
-    .attr("dy", "1.5em");
+    .attr("dy", "2.2em");
 
   xAxisHistorical.select(".domain").remove();
 
@@ -133,15 +151,21 @@ async function drawChart() {
     .call(d3.axisBottom(xProjection).tickSize(0))
     .attr('stroke-opacity', 0)
     .selectAll("text")
-    .attr("dy", "1.5em");
+    .attr("dy", "2.2em");
 
   xAxisProjection.select(".domain").remove();
 
-  const formatYAxis = d => `$${d3.format(".2s")(d)}`;
+  const formatYAxis = d => {
+    if (d === 0) {
+      return "$0K";
+    }
+    const valueInThousands = d / 1000;
+    return `$${valueInThousands.toFixed(1)}K`;
+  };
 
   const yAxisLeft = svg.append('g')
     .attr('transform', `translate(${margin.left},0)`)
-    .call(d3.axisLeft(yHistorical).tickSize(0).tickFormat(formatYAxis).ticks(10));
+    .call(d3.axisLeft(yHistorical).tickSize(0).tickFormat(formatYAxis).tickValues(tickValues));
 
   yAxisLeft.select(".domain").remove();
 
@@ -150,7 +174,7 @@ async function drawChart() {
 
   const yAxisRight = svg.append('g')
     .attr('transform', `translate(${width - margin.right},0)`)
-    .call(d3.axisRight(yHistorical).tickSize(-(width - width / 2 - margin.right)).tickFormat(formatYAxis).ticks(10));
+    .call(d3.axisRight(yHistorical).tickSize(-(width - width / 2 - margin.right)).tickFormat(formatYAxis).tickValues(tickValues));
 
   yAxisRight.selectAll("text")
     .attr("dx", "0.8em");
@@ -197,6 +221,108 @@ async function drawChart() {
     .datum(data)
     .attr('fill', 'url(#areaGradient)') // Usa el gradiente como relleno
     .attr('d', areaHistorical);
+  // Contenedor para la línea del gráfico histórico
+  const lineContainer = svg.append('g');
+
+  generateProjections.forEach(p => {
+    const xStart = xProjection(new Date(p.start_date));
+    const xEnd = xProjection(new Date(p.end_date));
+    const yMax = yHistorical(p.max_value);
+    const yMin = yHistorical(p.min_value);
+    const yLastDatum = yHistorical(lastDatum.close);
+
+    if (p.min_value <= lastDatum.close && p.max_value >= lastDatum.close) {
+      // Si la proyección cruza el valor actual, dibuja dos rectángulos
+      // Parte inferior (menor al valor actual)
+      svg.append('rect')
+        .attr('x', xStart)
+        .attr('y', yLastDatum)
+        .attr('width', xEnd - xStart)
+        .attr('height', yMin - yLastDatum)
+        .attr('fill', '#ED5666');
+
+      // Parte superior (mayor al valor actual)
+      svg.append('rect')
+        .attr('x', xStart)
+        .attr('y', yMax)
+        .attr('width', xEnd - xStart)
+        .attr('height', yLastDatum - yMax)
+        .attr('fill', '#24C6C8');
+    } else {
+      // Si la proyección no cruza el valor actual, dibuja un solo rectángulo
+      const color = p.max_value < lastDatum.close ? '#ED5666' : '#24C6C8';
+      svg.append('rect')
+        .attr('x', xStart)
+        .attr('y', yMax)
+        .attr('width', xEnd - xStart)
+        .attr('height', yMin - yMax)
+        .attr('rx', 5)
+        .attr('ry', 5)
+        .attr('fill', color);
+    }
+  });
+
+
+
+  const path = lineContainer.append('path')
+    .datum(data)
+    .attr('fill', 'none')
+    .attr('stroke', '#17A2B8')
+    .attr('stroke-width', 1.5)
+    .attr('d', lineHistorical);
+
+  const tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+  const focus = svg.append("g")
+    .attr("class", "focus")
+    .style("display", "none");
+
+  focus.append("circle")
+    .attr("r", outerRingRadius)  // Usa el mismo radio que el anillo exterior
+    .attr("fill", "#fff")  // Relleno blanco
+    .attr("stroke", "#17A2B8")  // Borde turquesa
+    .attr("stroke-width", 0)  // Grosor del borde
+    .attr("fill-opacity", 0.8);  // Opacidad
+
+  focus.append("circle")
+    .attr("class", "innerCircle")
+    .attr("r", innerCircleRadius)  // Usa el mismo radio que el círculo interior
+    .attr("fill", "#17A2B8");  // Relleno turquesa
+
+  svg.append("rect")
+    .attr("class", "overlay")
+    .attr("x", margin.left) // Limita el área activa al gráfico histórico
+    .attr("y", margin.top)  // Limita el área activa al gráfico histórico
+    .attr("width", width / 2 - margin.left) // Ancho de la gráfica histórica
+    .attr("height", height - margin.top - margin.bottom) // Altura del área activa
+    .style("opacity", 0)  // es transparente
+    .on("mouseover", () => {
+      focus.style("display", null);
+      tooltip.style("opacity", .9);
+    })
+    .on("mouseout", () => {
+      focus.style("display", "none");
+      tooltip.style("opacity", 0);
+    })
+    .on("mousemove", mousemove);
+
+  function mousemove(event) {
+    const bisectDate = d3.bisector(d => d.date).left;
+    const x0 = xHistorical.invert(d3.pointer(event)[0]),
+      i = bisectDate(data, x0, 1),
+      d0 = data[i - 1],
+      d1 = data[i],
+      d = x0 - d0.date > d1.date - x0 ? d1 : d0;
+
+    focus.attr("transform", `translate(${xHistorical(d.date)},${yHistorical(d.close)})`);
+    tooltip.style("opacity", .9);
+
+    tooltip.html(`$${d.close.toFixed(2)}`)
+      .style("left", `${event.pageX + 5}px`)
+      .style("top", `${event.pageY - 28}px`);
+  }
 
 
   // Anillo exterior
@@ -218,3 +344,38 @@ async function drawChart() {
 }
 
 drawChart();
+
+const generateDummyProjectionsData = (startDate, endDate, valorActual) => {
+  const proyecciones = [];
+  const meses = [];
+
+  let currentDate = new Date(startDate);
+
+  while (currentDate <= new Date(endDate)) {
+    meses.push(new Date(currentDate));
+    currentDate.setMonth(currentDate.getMonth() + 1);
+  }
+
+  // Desordenar el array de meses para elegir aleatoriamente
+  meses.sort(() => 0.5 - Math.random());
+
+  for (let i = 0; i < 10 && meses[i]; i++) {
+    const max = valorActual + Math.random() * (87.9 * 1000 - valorActual);
+    const min = Math.random() * max;
+
+    const inicioPeriodo = new Date(meses[i].getFullYear(), meses[i].getMonth(), 1);
+    const finPeriodo = new Date(meses[i].getFullYear(), meses[i].getMonth() + 1, 0);
+
+    proyecciones.push({
+      min_value: min,
+      max_value: max,
+      start_date: inicioPeriodo.toISOString().split('T')[0],
+      end_date: finPeriodo.toISOString().split('T')[0]
+    });
+  }
+
+  // Ordenar por fecha de inicio
+  proyecciones.sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
+
+  return proyecciones;
+};
