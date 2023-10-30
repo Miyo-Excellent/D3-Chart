@@ -12,7 +12,7 @@ async function drawChart() {
   const outerRingRadius = 9;
   const innerCircleRadius = 4.5;
 
-  const width = 1450;
+  const width = 2540;
   const height = 540;
   const margin = { top: 20, right: 70, bottom: 50, left: 70 };
 
@@ -239,6 +239,16 @@ async function drawChart() {
         .attr('y', yLastDatum)
         .attr('width', xEnd - xStart)
         .attr('height', yMin - yLastDatum)
+        .attr('rx', 5)
+        .attr('ry', 5)
+        .attr('fill', '#ED5666');
+
+      // Cubre la parte superior para eliminar el redondeo
+      svg.append('rect')
+        .attr('x', xStart)
+        .attr('y', yLastDatum)  // Empieza donde comienza el rectángulo principal
+        .attr('width', xEnd - xStart)
+        .attr('height', 5)  // Solo cubre el área redondeada
         .attr('fill', '#ED5666');
 
       // Parte superior (mayor al valor actual)
@@ -247,7 +257,18 @@ async function drawChart() {
         .attr('y', yMax)
         .attr('width', xEnd - xStart)
         .attr('height', yLastDatum - yMax)
+        .attr('rx', 5)
+        .attr('ry', 5)
         .attr('fill', '#24C6C8');
+
+      // Cubre la parte inferior para eliminar el redondeo
+      svg.append('rect')
+        .attr('x', xStart)
+        .attr('y', yLastDatum - 5)  // Empieza donde termina el redondeo
+        .attr('width', xEnd - xStart)
+        .attr('height', 5)  // Solo cubre el área redondeada
+        .attr('fill', '#24C6C8');
+
     } else {
       // Si la proyección no cruza el valor actual, dibuja un solo rectángulo
       const color = p.max_value < lastDatum.close ? '#ED5666' : '#24C6C8';
