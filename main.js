@@ -32,15 +32,16 @@ function initializeChart(containerSelector) {
     .attr("height", height);
 
   const currentData = data.filter(d => d.value <= 90);
+  const mixedData = data.filter(d => d.date >= tenYearsFromNow && d.value > 90);
   const extendedData = data.filter(d => d.value > 90 && d.date < tenYearsFromNow);
   const futureData = data.filter(d => d.date >= tenYearsFromNow && d.value <= 90);
-  const mixedData = data.filter(d => d.date >= tenYearsFromNow && d.value > 90);
 
   drawMainDomain(svg, xScale, yScale, currentData);
   drawDiscontinuityLine(svg, xScale, yScale);
   drawFutureDomain(svg, futureData, yScale);
   drawExtendedDomain(svg, extendedData, xScale);
   drawMixedFutureExtendedDomain(svg, mixedData, xScale, yScale);
+
   // Se encarga de dibujar el gráfico principal, el cual cuenta con su propio dominio y escala para el eje X y Y.
   function drawMainDomain(svg, xScale, yScale, currentData) {
     drawXAxis(svg, xScale);
@@ -180,21 +181,33 @@ function initializeChart(containerSelector) {
       .attr("fill", "green");
   }
 
+  // Se encarga de dibujar el punto morado, el cual representa la intersección entre el futuro y la extensión.
+  // Este cuenta con su propio dominio y escala para el eje X y Y y ocupa el mismo eje X y Y que el gráfico principal.
+  // El eje X y Y cuenta con 1 tick, el cual reprsentará el valor de todos los datos que se encuentren en la intersección.
   function drawMixedFutureExtendedDomain(svg, mixedData, xScale, yScale) {
-    // Calcular la posición donde se cruzan los ticks "+3X" y "+10YRS"
-    const intersectionX = width - margin.right;
-    const intersectionY = yScale(90);
-  
-    // Dibujar los puntos mixtos en la intersección
+    // Definir el punto de intersección para el eje X y el eje Y en el espacio mixto
+    const futureXIntersection = width - margin.right + (50 / 2); // Mitad del espacio asignado a la extensión futura
+    const extendedYIntersection = yScale(90) - (50 / 2); // Mitad del espacio asignado a la extensión Y
+
+    // Escalas de dominio de tres valores para la intersección
+    const xScaleMixed = d3.scaleLinear()
+      .domain([0, 1, 2]) // Solo se utiliza el valor 1 para posicionar en el centro
+      .range([futureXIntersection - 25, futureXIntersection, futureXIntersection + 25]);
+
+    const yScaleMixed = d3.scaleLinear()
+      .domain([0, 1, 2]) // Solo se utiliza el valor 1 para posicionar en el centro
+      .range([extendedYIntersection + 25, extendedYIntersection, extendedYIntersection - 25]);
+
+    // Dibujar el punto mixto en la intersección de las extensiones
     svg.selectAll("circle.mixed")
       .data(mixedData)
       .enter()
       .append("circle")
       .attr("class", "mixed")
-      .attr("cx", intersectionX)
-      .attr("cy", intersectionY)
+      .attr("cx", xScaleMixed(1)) // Colocar en la mitad del eje X mixto
+      .attr("cy", yScaleMixed(1)) // Colocar en la mitad del eje Y mixto
       .attr("r", 5)
-      .attr("fill", "purple");
+      .attr("fill", "purple"); // Usar un color distinto para diferenciar
   }
 }
 
