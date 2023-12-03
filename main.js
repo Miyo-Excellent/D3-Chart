@@ -285,34 +285,41 @@ function buildHistoricChart(containerSelector, width, height, margin, extended) 
  * @param margin: Margen del gráfico.
  * @param context: Contexto en el que se dibujará el gráfico.
  */
-async function buildChart(containerSelector, width, height, margin, context) {
-  // const { dates, prices } = await getMarketData(365 * 10);
+const buildChart = async (container, width, height, margin, context) => {
+  const svg = d3.select(container).append('svg')
+    .attr('width', width)
+    .attr('height', height);
 
-  // const data = dates.map((date, index) => ({
-  //   date: new Date(date),
-  //   close: prices[index]
-  // }));
+  const halfWidth = width / 2;
 
-  // const lastDatum = data[data.length - 1];
-  // const outerRingRadius = 9;
-  // const innerCircleRadius = 4.5;
+  let historicalGroupSvg = svg.append('g');
+  let projectionGroupSvg = svg.append('g');
+
+  const createRect = (group, x, y, w, h, fill) => {
+    group.append('rect')
+      .attr('x', x)
+      .attr('y', y)
+      .attr('width', w)
+      .attr('height', h)
+      .attr('fill', fill);
+  };
 
   switch (context) {
     case 0:
-      buildHistoricChart("#chart-container", width, height, margin, false);
+      createRect(historicalGroupSvg, margin.left, margin.top, width - margin.left - margin.right, height - margin.top - margin.bottom, '#293C4B');
       break;
     case 1:
-      buildHistoricChart("#chart-container", width/2, height, margin, true);
-      buildProjectionChart("#chart-container", width/2, height, margin, true);
+      createRect(historicalGroupSvg, margin.left, margin.top, halfWidth - margin.left, height - margin.top - margin.bottom, '#293C4B');
+      createRect(projectionGroupSvg, halfWidth, margin.top, halfWidth - margin.right, height - margin.top - margin.bottom, 'white');
       break;
     case 2:
-      buildProjectionChart("#chart-container", width, height, margin, true);
+      createRect(projectionGroupSvg, margin.left, margin.top, width - margin.left - margin.right, height - margin.top - margin.bottom, 'white');
       break;
-    default:
-      console.error("Invalid context");
   }
+};
 
-  return 'done';
-}
+const width = 2540;
+const height = 540;
+const margin = { top: 20, right: 70, bottom: 50, left: 70 };
 
-buildChart("#chart-container", 2540, 600, { top: 40, right: 200, bottom: 40, left: 40 }, 2);
+buildChart('#chart-container', width, height, margin, 1);
