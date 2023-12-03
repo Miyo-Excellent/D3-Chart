@@ -1,8 +1,17 @@
-function buildProjectionChart(containerSelector) {
+import { getMarketData } from './apis/coinGekko/index.js';
+
+/**
+ * Se encarga de construir el gráfico de proyección.
+ * @param containerSelector: Selector del contenedor donde se dibujará el gráfico.
+ * @param width: Ancho del gráfico.
+ * @param height: Alto del gráfico.
+ * @param margin: Margen del gráfico.
+ * @param extended: Indica si se debe dibujar el gráfico extendido.
+ * @returns {Promise<void>}
+ */
+function buildProjectionChart(containerSelector, width, height, margin, extended) {
   const chartContainer = d3.select(containerSelector);
-  const width = 1200;
-  const height = 600;
-  const margin = { top: 40, right: 200, bottom: 40, left: 40 };
+
   const parseDate = d3.timeParse("%Y-%m-%d");
   const today = new Date();
   const tenYearsFromNow = new Date(today.getFullYear() + 10, today.getMonth(), today.getDate());
@@ -32,15 +41,20 @@ function buildProjectionChart(containerSelector) {
     .attr("height", height);
 
   const currentData = data.filter(d => d.value <= 90);
-  const mixedData = data.filter(d => d.date >= tenYearsFromNow && d.value > 90);
-  const extendedData = data.filter(d => d.value > 90 && d.date < tenYearsFromNow);
-  const futureData = data.filter(d => d.date >= tenYearsFromNow && d.value <= 90);
+
 
   drawMainDomain(svg, xScale, yScale, currentData);
-  drawDiscontinuityLine(svg, xScale, yScale);
-  drawFutureDomain(svg, futureData, yScale);
-  drawExtendedDomain(svg, extendedData, xScale);
-  drawMixedFutureExtendedDomain(svg, mixedData, yScale);
+
+  if (extended === true) {
+    const futureData = data.filter(d => d.date >= tenYearsFromNow && d.value <= 90);
+    const extendedData = data.filter(d => d.value > 90 && d.date < tenYearsFromNow);
+    const mixedData = data.filter(d => d.date >= tenYearsFromNow && d.value > 90);
+
+    drawDiscontinuityLine(svg, xScale, yScale);
+    drawFutureDomain(svg, futureData, yScale);
+    drawExtendedDomain(svg, extendedData, xScale);
+    drawMixedFutureExtendedDomain(svg, mixedData, yScale);
+  }
 
   // Main Domain: Gráfico principal - Inicio
 
@@ -217,14 +231,14 @@ function buildProjectionChart(containerSelector) {
 
 
   // Mixed Future Extended Domain: Gráfico mixto - Inicio
-  
+
   /**
    * Se encarga de dibujar el dominio mixto, el cual cuenta con su propio dominio y escala para el eje X y Y.
    * @param svg: SVG donde se dibujará el dominio mixto.
    * @param mixedData: Datos que alimentarán el dominio mixto.
    * @param yScale: Escala para el eje Y.
    */
-  
+
   function drawMixedFutureExtendedDomain(svg, mixedData, yScale) {
     const futureXIntersection = width - margin.right + (50 / 2);
     const extendedYIntersection = yScale(90) - (50 / 2);
@@ -251,6 +265,54 @@ function buildProjectionChart(containerSelector) {
   // Mixed Future Extended Domain: Gráfico mixto - Fin
 }
 
-// Inicializa el gráfico
+/**
+ * Se encarga de construir el gráfico histórico.
+ * @param containerSelector: Selector del contenedor donde se dibujará el gráfico.
+ * @param width: Ancho del gráfico.
+ * @param height: Alto del gráfico.
+ * @param margin: Margen del gráfico.
+ * @param extended: Indica si se debe dibujar el gráfico extendido.
+ */
+function buildHistoricChart(containerSelector, width, height, margin, extended) {
 
-buildProjectionChart("#chart-container");
+}
+
+/**
+ * Se encarga de construir el contenedor del gráfico.
+ * @param containerSelector: Selector del contenedor donde se dibujará el gráfico.
+ * @param width: Ancho del gráfico.
+ * @param height: Alto del gráfico.
+ * @param margin: Margen del gráfico.
+ * @param context: Contexto en el que se dibujará el gráfico.
+ */
+async function buildChart(containerSelector, width, height, margin, context) {
+  // const { dates, prices } = await getMarketData(365 * 10);
+
+  // const data = dates.map((date, index) => ({
+  //   date: new Date(date),
+  //   close: prices[index]
+  // }));
+
+  // const lastDatum = data[data.length - 1];
+  // const outerRingRadius = 9;
+  // const innerCircleRadius = 4.5;
+
+  switch (context) {
+    case 0:
+      buildHistoricChart("#chart-container", width, height, margin, false);
+      break;
+    case 1:
+      buildHistoricChart("#chart-container", width/2, height, margin, true);
+      buildProjectionChart("#chart-container", width/2, height, margin, true);
+      break;
+    case 2:
+      buildProjectionChart("#chart-container", width, height, margin, true);
+      break;
+    default:
+      console.error("Invalid context");
+  }
+
+  return 'done';
+}
+
+buildChart("#chart-container", 2540, 600, { top: 40, right: 200, bottom: 40, left: 40 }, 2);
