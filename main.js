@@ -1,5 +1,6 @@
 import { getMarketData } from './apis/coinGekko/index.js';
 import { buildHistoricalChart } from './historical.js';
+import { buildProjectionChart } from './projection.js';
 
 /**
  * Se encarga de construir el contenedor del gráfico.
@@ -19,16 +20,25 @@ const buildChart = async (container, width, height, margin, context) => {
   let historicalGroupSvg = svg.append('g');
   let projectionGroupSvg = svg.append('g');
 
+  // const { dates, prices } = await getMarketData(365 * 10);
+
+  // const data = dates.map((date, index) => ({
+  //   date: new Date(date),
+  //   close: prices[index]
+  // }));
+
+  // const lastDatum = data[data.length - 1];
+
   switch (context) {
     case 0:
-      buildHistoricalChart(svg, historicalGroupSvg, width, height, margin);
+      buildHistoricalChart(historicalGroupSvg, width - margin.left - margin.right, height - margin.top - margin.bottom, margin.left, margin.top, true);
       break;
     case 1:
-      // createRect(historicalGroupSvg, margin.left, margin.top, halfWidth - margin.left, height - margin.top - margin.bottom, '#293C4B');
-      // createRect(projectionGroupSvg, halfWidth, margin.top, halfWidth - margin.right, height - margin.top - margin.bottom, 'white');
+      buildHistoricalChart(historicalGroupSvg, halfWidth - margin.left, height - margin.top - margin.bottom, margin.left, margin.top, false);
+      buildProjectionChart(projectionGroupSvg, halfWidth - margin.right, height - margin.top - margin.bottom, halfWidth, margin.top, false);
       break;
     case 2:
-      // createRect(projectionGroupSvg, margin.left, margin.top, width - margin.left - margin.right, height - margin.top - margin.bottom, 'white');
+      buildProjectionChart(projectionGroupSvg, width - margin.left - margin.right, height - margin.top - margin.bottom, margin.left, margin.top, true);
       break;
   }
 };
@@ -37,4 +47,4 @@ const width = 2540;
 const height = 540;
 const margin = { top: 20, right: 70, bottom: 50, left: 70 };
 
-buildChart('#chart-container', width, height, margin, 0);
+buildChart('#chart-container', width, height, margin, 1);
