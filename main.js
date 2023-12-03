@@ -1,7 +1,7 @@
-function initializeChart(containerSelector) {
+function buildProjectionChart(containerSelector) {
   const chartContainer = d3.select(containerSelector);
-  const width = 800;
-  const height = 400;
+  const width = 1200;
+  const height = 600;
   const margin = { top: 40, right: 200, bottom: 40, left: 40 };
   const parseDate = d3.timeParse("%Y-%m-%d");
   const today = new Date();
@@ -40,16 +40,28 @@ function initializeChart(containerSelector) {
   drawDiscontinuityLine(svg, xScale, yScale);
   drawFutureDomain(svg, futureData, yScale);
   drawExtendedDomain(svg, extendedData, xScale);
-  drawMixedFutureExtendedDomain(svg, mixedData, xScale, yScale);
+  drawMixedFutureExtendedDomain(svg, mixedData, yScale);
 
-  // Se encarga de dibujar el gráfico principal, el cual cuenta con su propio dominio y escala para el eje X y Y.
+  // Main Domain: Gráfico principal - Inicio
+
+  /** 
+  * Se encarga de dibujar el gráfico principal, el cual cuenta con su propio dominio y escala para el eje X y Y.
+  * @param svg: SVG donde se dibujará el gráfico.
+  * @param xScale: Escala para el eje X.
+  * @param yScale: Escala para el eje Y.
+  * @param currentData: Datos que alimentarán el gráfico principal.
+  */
   function drawMainDomain(svg, xScale, yScale, currentData) {
     drawXAxis(svg, xScale);
     drawYAxis(svg, yScale);
     drawCurrentData(svg, currentData, xScale, yScale);
   }
 
-  // Se encarga de dibujar el eje X, el de abajo, el cual cuenta con 10 ticks y su formato es de años.
+  /**
+   * Se encarga de dibujar el eje X, del gráfico principal, el cual cuenta con 10 ticks, su formato es de años y su valor máximo es de 10 años a partir de la fecha actual.
+   * @param svg: SVG donde se dibujará el eje X.
+   * @param xScale: Escala para el eje X.
+   */
   function drawXAxis(svg, xScale) {
     const xAxis = d3.axisBottom(xScale)
       .ticks(10)
@@ -61,7 +73,11 @@ function initializeChart(containerSelector) {
       .call(xAxis);
   }
 
-  // Se encarga de dibujar el eje Y, el de la izquierda, el cual cuenta con 10 ticks (contabilizando el 0) y su formato es de billones.
+  /**
+   * Se encarga de dibujar el eje Y, del gráfico principal, el cual cuenta con 10 ticks, su formato es de billones y su valor máximo es de 90 billones.
+   * @param svg: SVG donde se dibujará el eje Y.
+   * @param yScale: Escala para el eje Y.
+   */
   function drawYAxis(svg, yScale) {
     const yAxis = d3.axisLeft(yScale)
       .tickValues(yScale.ticks().filter(tick => tick < 100))
@@ -71,7 +87,13 @@ function initializeChart(containerSelector) {
       .call(yAxis);
   }
 
-  // Se encarga de dibujar los puntos azules, el cual representa el presente de la gráfica.
+  /**
+   * Se encarga de dibujar los puntos azules, del gráfico principal, los cuales representan los datos actuales.
+   * @param svg: SVG donde se dibujarán los puntos.
+   * @param currentData: Datos que alimentarán los puntos.
+   * @param xScale: Escala para el eje X.
+   * @param yScale: Escala para el eje Y.
+   */
   function drawCurrentData(svg, currentData, xScale, yScale) {
     svg.selectAll("circle.current")
       .data(currentData)
@@ -84,7 +106,17 @@ function initializeChart(containerSelector) {
       .attr("fill", "blue");
   }
 
-  // Se encarga de dibujar la línea discontinua que separa el gráfico principal del futuro y la extensión.
+  // Main Domain: Gráfico principal - Fin
+
+
+  // Future Domain: Gráfico futuro - Inicio
+
+  /**
+   * Se encarga de dibujar la línea discontinua, la cual representa el límite entre el gráfico principal y el futuro.
+   * @param svg: SVG donde se dibujará la línea.
+   * @param xScale: Escala para el eje X.
+   * @param yScale: Escala para el eje Y.
+   */
   function drawDiscontinuityLine(svg, xScale, yScale) {
     const endOfCurrentXAxis = xScale(d3.timeDay.offset(tenYearsFromNow, -1));
     svg.append("line")
@@ -107,108 +139,118 @@ function initializeChart(containerSelector) {
       .attr("stroke-dasharray", "5,5");
   }
 
-  // Se encarga de dibujar el segundo eje X, el de la derecha, y los puntos rojos, el cual representa el futuro de la gráfica.
-  // Este cuenta con su propio dominio y escala para el eje X y ocupa el mismo eje Y que el gráfico principal.
-  // El eje X cuenta con 1 tick, el cual reprsentará el valor de todos los datos que se encuentren en el futuro.
+  /**
+   * Se encarga el dominio futuro, el cual cuenta con su propio dominio y escala para el eje X y ocupa el mismo eje Y que el gráfico principal.
+   * @param svg: SVG donde se dibujará el dominio futuro.
+   * @param futureData: Datos que alimentarán el dominio futuro.
+   * @param yScale: Escala para el eje Y.
+   */
   function drawFutureDomain(svg, futureData, yScale) {
-    // Definir el ancho de la extensión del eje X
     const futureWidth = 50;
     const middleOfFutureArea = futureWidth / 2;
 
-    // Crear un dominio con tres valores y hacer que el rango cubra el ancho extendido
-    const xScaleFuture = d3.scaleLinear() // Cambiando a scaleLinear por simplicidad
-      .domain([0, 1, 2]) // Utilizamos tres valores para posicionar el tick en el centro
+    const xScaleFuture = d3.scaleLinear()
+      .domain([0, 1, 2])
       .range([0, middleOfFutureArea, futureWidth]);
 
-    // Crear el eje X futuro con tres ticks, pero mostraremos solo el del centro
     const xAxisFuture = d3.axisBottom(xScaleFuture)
-      .tickValues([1]) // Solo queremos mostrar el tick para el valor '1'
-      .tickFormat(d => d === 1 ? '+10YRS' : '') // Asignar el formato '+10YRS' solo al tick del centro
+      .tickValues([1])
+      .tickFormat(d => d === 1 ? '+10YRS' : '')
       .tickSizeOuter(0);
 
-    // Añadir el eje X futuro al SVG
-    const startOfFutureAxis = width - margin.right + middleOfFutureArea; // Ajustar la posición de inicio del eje
+    const startOfFutureAxis = width - margin.right + middleOfFutureArea;
 
     svg.append("g")
       .attr("transform", `translate(${startOfFutureAxis - middleOfFutureArea}, ${height - margin.bottom})`)
       .call(xAxisFuture);
 
-    // Dibujar los puntos futuros, alineados con el tick central
     svg.selectAll("circle.future")
       .data(futureData)
       .enter()
       .append("circle")
       .attr("class", "future")
-      .attr("cx", startOfFutureAxis) // Todos los puntos se alinean con el tick '+10YRS'
+      .attr("cx", startOfFutureAxis)
       .attr("cy", d => yScale(d.value))
       .attr("r", 5)
       .attr("fill", "red");
   }
 
-  // Se encarga de dibujar el tercer eje Y, el de arriba, y los puntos verdes, el cual representa la extensión de la gráfica.
-  // Este cuenta con su propio dominio y escala para el eje Y y ocupa el mismo eje X que el gráfico principal.
-  // El eje Y cuenta con 1 tick, el cual reprsentará el valor de todos los datos que se encuentren en la extensión el cual es mayor a 90 y su tick es +3X.
+  // Future Domain: Gráfico futuro - Fin
+
+  // Extended Domain: Gráfico extendido - Inicio
+
+  /**
+   * Se encarga de dibujar el dominio extendido, el cual cuenta con su propio dominio y escala para el eje Y y ocupa el mismo eje X que el gráfico principal.
+   * @param svg: SVG donde se dibujará el dominio extendido.
+   * @param extendedData: Datos que alimentarán el dominio extendido.
+   * @param xScale: Escala para el eje X.
+   */
   function drawExtendedDomain(svg, extendedData, xScale) {
-    // Definir la altura de la extensión del eje Y
     const extendedHeight = 50;
     const middleOfExtendedArea = yScale(90) - extendedHeight / 2;
 
-    // Crear un dominio con tres valores y hacer que el rango cubra la altura extendida
     const yScaleExtended = d3.scaleLinear()
-      .domain([0, 1, 2]) // Utilizamos tres valores para posicionar el tick en el centro
+      .domain([0, 1, 2])
       .range([yScale(90), middleOfExtendedArea, yScale(90) - extendedHeight]);
 
-    // Crear el eje Y extendido con tres ticks, pero mostraremos solo el del centro
     const yAxisExtended = d3.axisLeft(yScaleExtended)
-      .tickValues([1]) // Solo queremos mostrar el tick para el valor '1'
-      .tickFormat(d => d === 1 ? '+3X' : '') // Asignar el formato '+3X' solo al tick del centro
+      .tickValues([1])
+      .tickFormat(d => d === 1 ? '+3X' : '')
       .tickSizeOuter(0);
 
-    // Añadir el eje Y extendido al SVG
     svg.append("g")
       .attr("transform", `translate(${margin.left},0)`)
       .call(yAxisExtended);
 
-    // Dibujar los puntos extendidos, alineados con el tick central
     svg.selectAll("circle.extended")
       .data(extendedData)
       .enter()
       .append("circle")
       .attr("class", "extended")
       .attr("cx", d => xScale(d.date))
-      .attr("cy", middleOfExtendedArea) // Todos los puntos se alinean con el tick '+3X'
+      .attr("cy", middleOfExtendedArea)
       .attr("r", 5)
       .attr("fill", "green");
   }
 
-  // Se encarga de dibujar el punto morado, el cual representa la intersección entre el futuro y la extensión.
-  // Este cuenta con su propio dominio y escala para el eje X y Y y ocupa el mismo eje X y Y que el gráfico principal.
-  // El eje X y Y cuenta con 1 tick, el cual reprsentará el valor de todos los datos que se encuentren en la intersección.
-  function drawMixedFutureExtendedDomain(svg, mixedData, xScale, yScale) {
-    // Definir el punto de intersección para el eje X y el eje Y en el espacio mixto
-    const futureXIntersection = width - margin.right + (50 / 2); // Mitad del espacio asignado a la extensión futura
-    const extendedYIntersection = yScale(90) - (50 / 2); // Mitad del espacio asignado a la extensión Y
+  // Extended Domain: Gráfico extendido - Fin
 
-    // Escalas de dominio de tres valores para la intersección
+
+  // Mixed Future Extended Domain: Gráfico mixto - Inicio
+  
+  /**
+   * Se encarga de dibujar el dominio mixto, el cual cuenta con su propio dominio y escala para el eje X y Y.
+   * @param svg: SVG donde se dibujará el dominio mixto.
+   * @param mixedData: Datos que alimentarán el dominio mixto.
+   * @param yScale: Escala para el eje Y.
+   */
+  
+  function drawMixedFutureExtendedDomain(svg, mixedData, yScale) {
+    const futureXIntersection = width - margin.right + (50 / 2);
+    const extendedYIntersection = yScale(90) - (50 / 2);
+
     const xScaleMixed = d3.scaleLinear()
-      .domain([0, 1, 2]) // Solo se utiliza el valor 1 para posicionar en el centro
+      .domain([0, 1, 2])
       .range([futureXIntersection - 25, futureXIntersection, futureXIntersection + 25]);
 
     const yScaleMixed = d3.scaleLinear()
-      .domain([0, 1, 2]) // Solo se utiliza el valor 1 para posicionar en el centro
+      .domain([0, 1, 2])
       .range([extendedYIntersection + 25, extendedYIntersection, extendedYIntersection - 25]);
 
-    // Dibujar el punto mixto en la intersección de las extensiones
     svg.selectAll("circle.mixed")
       .data(mixedData)
       .enter()
       .append("circle")
       .attr("class", "mixed")
-      .attr("cx", xScaleMixed(1)) // Colocar en la mitad del eje X mixto
-      .attr("cy", yScaleMixed(1)) // Colocar en la mitad del eje Y mixto
+      .attr("cx", xScaleMixed(1))
+      .attr("cy", yScaleMixed(1))
       .attr("r", 5)
-      .attr("fill", "purple"); // Usar un color distinto para diferenciar
+      .attr("fill", "purple");
   }
+
+  // Mixed Future Extended Domain: Gráfico mixto - Fin
 }
 
-initializeChart("#chart-container");
+// Inicializa el gráfico
+
+buildProjectionChart("#chart-container");
