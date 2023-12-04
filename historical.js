@@ -11,19 +11,25 @@ import { createRect } from './helper.js';
  * @returns {Promise<void>}
  */
 
-export const buildHistoricalChart = (group, width, height, xPosition, yPosition, only) => {
+export const buildHistoricalChart = (group, width, height, xPosition, yPosition, only, data, lastData, highestValue) => {
     createRect(group, xPosition, yPosition, width, height, '#293C4B');
 
-    const xDomain = [0, 100];
-    const yDomain = [0, 500];
+    const xDomain = d3.extent(data, d => d.date);
+    const yDomain = [0, highestValue];
 
-    const xScale = d3.scaleLinear()
-        .domain(xDomain)
-        .range([0, width]);
+    const xScale = d3.scaleUtc().domain(xDomain).range([0, width]);
+    const yScale = d3.scaleLinear().domain(yDomain).range([height, 0]);
 
-    const yScale = d3.scaleLinear()
-        .domain(yDomain)
-        .range([height, 0]);
+    const tickInterval = highestValue / 9;
+    const tickValues = Array.from({ length: 10 }, (_, i) => i * tickInterval);
+
+    const formatYAxis = d => {
+        if (d === 0) {
+            return "$0K";
+        }
+        const valueInThousands = d / 1000;
+        return `$${valueInThousands.toFixed(1)}K`;
+    };
 
     group.append('g')
         .attr('transform', `translate(${xPosition},${yPosition + height})`)
@@ -31,7 +37,7 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
 
     group.append('g')
         .attr('transform', `translate(${xPosition},${yPosition})`)
-        .call(d3.axisLeft(yScale).ticks(10))
+        .call(d3.axisLeft(yScale).tickSize(0).tickFormat(formatYAxis).tickValues(tickValues))
         .call(g => g.select('.domain').remove())
         .call(g => g.selectAll('.tick line')
             .attr('stroke', '#3A4B59')
@@ -40,7 +46,7 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
     if (only === true) {
         group.append('g')
             .attr('transform', `translate(${xPosition + width},${yPosition})`)
-            .call(d3.axisRight(yScale).ticks(10))
+            .call(d3.axisRight(yScale).tickSize(0).tickFormat(formatYAxis).tickValues(tickValues))
             .call(g => g.select('.domain').remove())
             .call(g => g.selectAll('.tick line')
                 .attr('stroke', '#3A4B59')
