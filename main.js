@@ -23,16 +23,19 @@ const buildChart = async (container, width, height, margin, context, data) => {
   const lastData = data[data.length - 1];
   const highestValue = d3.max(data, d => d.close * 1.3)
 
+  const grouphWidthAlone = width - margin.left - margin.right;
+  const grouphHeightStandard = height - margin.top - margin.bottom;
+
   switch (context) {
     case 0:
-      buildHistoricalChart(historicalGroupSvg, width - margin.left - margin.right, height - margin.top - margin.bottom, margin.left, margin.top, true, data, lastData, highestValue);
+      buildHistoricalChart(historicalGroupSvg, grouphWidthAlone, grouphHeightStandard, margin.left, margin.top, true, data, lastData, highestValue);
       break;
     case 1:
-      buildHistoricalChart(historicalGroupSvg, halfWidth - margin.left, height - margin.top - margin.bottom, margin.left, margin.top, false);
-      buildProjectionChart(projectionGroupSvg, halfWidth - margin.right, height - margin.top - margin.bottom, halfWidth, margin.top, false);
+      buildHistoricalChart(historicalGroupSvg, halfWidth - margin.left, grouphHeightStandard, margin.left, margin.top, false, data, lastData, highestValue);
+      // buildProjectionChart(projectionGroupSvg, halfWidth - margin.right, grouphHeightStandard, halfWidth, margin.top, false);
       break;
     case 2:
-      buildProjectionChart(projectionGroupSvg, width - margin.left - margin.right, height - margin.top - margin.bottom, margin.left, margin.top, true);
+      // buildProjectionChart(projectionGroupSvg, grouphWidthAlone, grouphHeightStandard, margin.left, margin.top, true);
       break;
   }
 };
