@@ -17,8 +17,8 @@ const buildChart = async (container, width, height, margin, context, data) => {
 
   const halfWidth = width / 2;
 
-  const historicalGroupSvg = svg.append('g');
   const projectionGroupSvg = svg.append('g');
+  const historicalGroupSvg = svg.append('g');
 
   const lastData = data[data.length - 1];
   const highestValue = d3.max(data, d => d.close * 1.3)
@@ -31,11 +31,11 @@ const buildChart = async (container, width, height, margin, context, data) => {
       buildHistoricalChart(historicalGroupSvg, grouphWidthAlone, grouphHeightStandard, margin.left, margin.top, true, data, lastData, highestValue);
       break;
     case 1:
+      buildProjectionChart(projectionGroupSvg, halfWidth - margin.right, grouphHeightStandard, halfWidth, margin.top, false, [], lastData, highestValue);
       buildHistoricalChart(historicalGroupSvg, halfWidth - margin.left, grouphHeightStandard, margin.left, margin.top, false, data, lastData, highestValue);
-      // buildProjectionChart(projectionGroupSvg, halfWidth - margin.right, grouphHeightStandard, halfWidth, margin.top, false);
       break;
     case 2:
-      // buildProjectionChart(projectionGroupSvg, grouphWidthAlone, grouphHeightStandard, margin.left, margin.top, true);
+      buildProjectionChart(projectionGroupSvg, grouphWidthAlone, grouphHeightStandard, margin.left, margin.top, true, [], lastData, highestValue);
       break;
   }
 };
@@ -49,4 +49,4 @@ const data = dates.map((date, index) => ({
   close: prices[index]
 }));
 
-buildChart('#chart-container', width, height, margin, 0, data);
+buildChart('#chart-container', width, height, margin, 1, data);

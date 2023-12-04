@@ -1,4 +1,5 @@
-import { createRect } from './helper.js';
+import { createRect, valueInThousands, tickValues } from './helper.js';
+import { generateDummyProjectionsData } from './helpers/dummyData.js';
 /**
  * Se encarga de construir el gráfico de proyección.
  * @param {Object} group: Grupo donde se dibujará el gráfico.
@@ -7,43 +8,105 @@ import { createRect } from './helper.js';
  * @param {number} xPosition: Posición en X del gráfico.
  * @param {number} yPosition: Posición en Y del gráfico.
  * @param {boolean} only: Indica si el gráfico es el único en el contenedor.
+ * @param {Object[]} data: Datos del gráfico.
+ * @param {Object[]} lastData: Datos del último día.
+ * @param {number} highestValue: Valor más alto del gráfico.
  * @returns {Promise<void>}
  */
 
-export const buildProjectionChart = (group, width, height, xPosition, yPosition, only) => {
+export const buildProjectionChart = (group, width, height, xPosition, yPosition, only, data, lastData, highestValue) => {
     createRect(group, xPosition, yPosition, width, height, '#FFFFFF');
 
-    const xDomain = [0, 100];
-    const yDomain = [0, 500];
+    const today = new Date();
 
-    const xScale = d3.scaleLinear()
-        .domain(xDomain)
-        .range([0, width]);
+    // const generateProjections = generateDummyProjectionsData(today, '2033-01-01', lastData.close);
+    // const projectionData = generateProjections.map(p => ({
+    //   startDate: new Date(p.start_date),
+    //   endDate: new Date(p.end_date),
+    //   minValue: p.min_value,
+    //   maxValue: p.max_value
+    // }));
 
-    const yScale = d3.scaleLinear()
-        .domain(yDomain)
-        .range([height, 0]);
+    const xDomain = [today, d3.utcYear.offset(today, 10)];
+    const yDomain = [0, highestValue];
+
+    const xScale = d3.scaleUtc().domain(xDomain).range([0, width]);
+    const yScale = d3.scaleLinear().domain(yDomain).range([height, 0]);
+
+    const ticks = tickValues(highestValue, 9, 10);
 
     group.append('g')
         .attr('transform', `translate(${xPosition},${yPosition + height})`)
-        .call(d3.axisBottom(xScale).ticks(10));
+        .call(d3.axisBottom(xScale).tickSize(0))
+        .call(g => g.select('.domain').remove())
+        .call(g => g.selectAll('.tick text')
+            .attr('dy', '2.2em')
+            .style('font-family', 'Montserrat')
+            .style('font-size', '12px')
+            .style('font-weight', '500')
+            .style('line-height', '15px')
+            .style('letter-spacing', '0.4285714030265808px')
+            .style('fill', '#D6D9DC'));
 
     group.append('g')
         .attr('transform', `translate(${xPosition + width},${yPosition})`)
-        .call(d3.axisRight(yScale).ticks(10))
+        .call(d3.axisRight(yScale).tickSize(0).tickFormat(valueInThousands).tickValues(ticks))
         .call(g => g.select('.domain').remove())
+        .call(g => g.selectAll('.tick text')
+        .attr('dx', '0.8em')
+        .style('font-family', 'Montserrat')
+        .style('font-size', '12px')
+        .style('font-weight', '500')
+        .style('line-height', '15px')
+        .style('letter-spacing', '0.4285714030265808px')
+        .style('text-align', 'left')
+        .style('fill', '#D6D9DC'))
         .call(g => g.selectAll('.tick line')
             .attr('stroke', '#ECECEC')
             .attr('x2', -width));
 
     if (only === true) {
         group.append('g')
-            .attr('transform', `translate(${xPosition},${yPosition})`)
-            .call(d3.axisLeft(yScale).ticks(10))
-            .call(g => g.select('.domain').remove())
-            .call(g => g.selectAll('.tick line')
-                .attr('stroke', '#ECECEC')
-                .attr('x2', width));
+        .attr('transform', `translate(${xPosition},${yPosition})`)
+        .call(d3.axisLeft(yScale).tickSize(0).tickFormat(valueInThousands).tickValues(ticks))
+        .call(g => g.select('.domain').remove())
+        .call(g => g.selectAll('.tick text')
+            .attr('dx', '-0.8em')
+            .style('font-family', 'Montserrat')
+            .style('font-size', '12px')
+            .style('font-weight', '500')
+            .style('line-height', '15px')
+            .style('letter-spacing', '0.4285714030265808px')
+            .style('text-align', 'left')
+            .style('fill', '#D6D9DC'))
+        .call(g => g.selectAll('.tick line')
+            .attr('stroke', '#ECECEC')
+            .attr('x2', width));
+    }else{
+       const defs = group.append("defs");
+       const pattern = defs.append("pattern")
+           .attr("id", "splitPattern")
+           .attr("width", 10)
+           .attr("height", 10)
+           .attr("patternUnits", "userSpaceOnUse");
+       pattern.append("rect")
+           .attr("width", 10)
+           .attr("height", 5)
+           .attr("transform", "translate(0,0)")
+           .attr("fill", "#293C4B");
+       pattern.append("rect")
+           .attr("width", 10)
+           .attr("height", 5)
+           .attr("transform", "translate(0,5)")
+           .attr("fill", "#FFFFFF");
+
+       group.append("line")
+           .attr("x1", xPosition)
+           .attr("y1", yPosition)
+           .attr("x2", xPosition)
+           .attr("y2", yPosition + height)
+           .attr("stroke", "url(#splitPattern)")
+           .attr("stroke-width", 2);
     }
 
     return;

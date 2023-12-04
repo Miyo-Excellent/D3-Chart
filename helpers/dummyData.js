@@ -44,3 +44,38 @@ export function generateDummyData() {
     }
     return data;
 }
+
+export const generateDummyProjectionsData = (startDate, endDate, valorActual) => {
+    const proyecciones = [];
+    const meses = [];
+  
+    let currentDate = new Date(startDate);
+  
+    while (currentDate <= new Date(endDate)) {
+      meses.push(new Date(currentDate));
+      currentDate.setMonth(currentDate.getMonth() + 1);
+    }
+  
+    // Desordenar el array de meses para elegir aleatoriamente
+    meses.sort(() => 0.5 - Math.random());
+  
+    for (let i = 0; i < 10 && meses[i]; i++) {
+      const max = valorActual + Math.random() * (87.9 * 1000 - valorActual);
+      const min = Math.random() * max;
+  
+      const inicioPeriodo = new Date(meses[i].getFullYear(), meses[i].getMonth(), 1);
+      const finPeriodo = new Date(meses[i].getFullYear(), meses[i].getMonth() + 1, 0);
+  
+      proyecciones.push({
+        min_value: min,
+        max_value: max,
+        start_date: inicioPeriodo.toISOString().split('T')[0],
+        end_date: finPeriodo.toISOString().split('T')[0]
+      });
+    }
+  
+    // Ordenar por fecha de inicio
+    proyecciones.sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
+  
+    return proyecciones;
+  };
