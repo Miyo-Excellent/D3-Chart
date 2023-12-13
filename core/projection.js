@@ -1,5 +1,5 @@
-import { createRect, valueInThousands, tickValues } from './helper.js';
-import { generateDummyProjectionsData } from './helpers/dummyData.js';
+import { createRect, valueInThousands, tickValues } from '../helpers/helper.js';
+import { generateDummyProjectionsData } from '../helpers/dummyData.js';
 /**
  * Se encarga de construir el gráfico de proyección.
  * @param {Object} group: Grupo donde se dibujará el gráfico.
@@ -16,16 +16,16 @@ import { generateDummyProjectionsData } from './helpers/dummyData.js';
 
 export const buildProjectionChart = (group, width, height, xPosition, yPosition, only, data, lastData, highestValue) => {
     createRect(group, xPosition, yPosition, width, height, '#FFFFFF');
-
+    drawOuterLines(group, xPosition, yPosition, height, width);
+    
     const today = new Date();
-
-    // const generateProjections = generateDummyProjectionsData(today, '2033-01-01', lastData.close);
-    // const projectionData = generateProjections.map(p => ({
-    //   startDate: new Date(p.start_date),
-    //   endDate: new Date(p.end_date),
-    //   minValue: p.min_value,
-    //   maxValue: p.max_value
-    // }));
+    const generateProjections = generateDummyProjectionsData(today, '2033-01-01', lastData.close);
+    const projectionData = generateProjections.map(p => ({
+      startDate: new Date(p.start_date),
+      endDate: new Date(p.end_date),
+      minValue: p.min_value,
+      maxValue: p.max_value
+    }));
 
     const xDomain = [today, d3.utcYear.offset(today, 10)];
     const yDomain = [0, highestValue];
@@ -53,7 +53,7 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
         .call(d3.axisRight(yScale).tickSize(0).tickFormat(valueInThousands).tickValues(ticks))
         .call(g => g.select('.domain').remove())
         .call(g => g.selectAll('.tick text')
-        .attr('dx', '0.8em')
+        .attr('dx', '1.5em')
         .style('font-family', 'Montserrat')
         .style('font-size', '12px')
         .style('font-weight', '500')
@@ -71,7 +71,7 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
         .call(d3.axisLeft(yScale).tickSize(0).tickFormat(valueInThousands).tickValues(ticks))
         .call(g => g.select('.domain').remove())
         .call(g => g.selectAll('.tick text')
-            .attr('dx', '-0.8em')
+            .attr('dx', '-1.5em')
             .style('font-family', 'Montserrat')
             .style('font-size', '12px')
             .style('font-weight', '500')
@@ -111,6 +111,84 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
 
     return;
 };
+
+const drawOuterLines = (group, xPosition, yPosition, height, width) => {
+    const horizontalLine = group.append('line')
+        .attr('x1', xPosition)
+        .attr('y1', yPosition + height + 12)
+        .attr('x2', xPosition)
+        .attr('y2', yPosition + height + 12)
+        .attr('stroke', '#BDC2C7')
+        .attr('stroke-width', 1.5);
+
+    horizontalLine.transition()
+        .duration(1500)
+        .attr('x2', xPosition + width - 6)
+        .on('end', drawInclinedLine); 
+
+    function drawInclinedLine() {
+        const inclineLength = 12;
+        const angle = 65;
+        const angleRadians = (angle * Math.PI) / 180;
+        const halfIncline = inclineLength / 2;
+        const offsetX = Math.cos(angleRadians) * halfIncline;
+        const offsetY = Math.sin(angleRadians) * halfIncline;
+
+        group.append('line')
+            .attr('x1', xPosition + width - 6 - offsetX) 
+            .attr('y1', yPosition + height + 12 + offsetY) 
+            .attr('x2', xPosition + width - 6 - offsetX) // Comenzar con la línea vertical coincidiendo con la horizontal
+            .attr('y2', yPosition + height + 12 + offsetY)
+            .attr('stroke', '#BDC2C7')
+            .attr('stroke-width', 1.5)
+            .transition()
+            .duration(500)
+            .attr('x2', xPosition + width - 6 + offsetX) // Finalizar con la línea inclinada hacia la derecha
+            .attr('y2', yPosition + height + 12 - offsetY);
+    }
+
+    const verticalLine = group.append('line')
+        .attr('x1', xPosition + width + 10)
+        .attr('y1', yPosition + height)
+        .attr('x2', xPosition + width + 10)
+        .attr('y2', yPosition + height)
+        .attr('stroke', '#BDC2C7')
+        .attr('stroke-width', 1.5);
+
+    verticalLine.transition()
+            .duration(1500)
+            .attr('y2', yPosition + 4)
+            .on('end', drawInclinedLineY); 
+
+    function drawInclinedLineY() {
+        const inclineLength = 10;
+        const angle = 2;
+        const angleRadians = (angle * Math.PI) / 180;
+    
+        const offsetX = Math.cos(angleRadians) * inclineLength;
+        const offsetY = Math.sin(angleRadians) * inclineLength;
+    
+        // Comienza con una línea de longitud cero (o muy pequeña)
+        const inclinedLine = group.append('line')
+            .attr('x1', xPosition + width + 10 + offsetX / 2)
+            .attr('y1', yPosition + 6 + offsetY / 2) 
+            .attr('x2', xPosition + width + 10 + offsetX / 2) // Punto inicial igual a x1
+            .attr('y2', yPosition + 6 + offsetY / 2) // Punto inicial igual a y1
+            .attr('stroke', '#BDC2C7')
+            .attr('stroke-width', 1.5);
+    
+        // Anima la línea hasta alcanzar la longitud y orientación deseadas
+        inclinedLine.transition()
+            .duration(500)
+            .attr('x2', xPosition + width + 5) // Punto final en X
+            .attr('y2', yPosition + 3 - offsetY / 2); // Punto final en Y
+    }
+            
+    };
+
+
+
+
 
 
 

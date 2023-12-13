@@ -1,4 +1,4 @@
-import { createRect, valueInThousands, tickValues } from './helper.js';
+import { createRect, valueInThousands, tickValues } from '../helpers/helper.js';
 
 /**
  * Se encarga de construir el gráfico de histórico.
@@ -45,7 +45,7 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
         .call(d3.axisLeft(yScale).tickSize(0).tickFormat(valueInThousands).tickValues(ticks))
         .call(g => g.select('.domain').remove())
         .call(g => g.selectAll('.tick text')
-            .attr('dx', '-0.8em')
+            .attr('dx', '-1.5em')
             .style('font-family', 'Montserrat')
             .style('font-size', '12px')
             .style('font-weight', '500')
@@ -64,7 +64,7 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
             .call(d3.axisRight(yScale).tickSize(0).tickFormat(valueInThousands).tickValues(ticks))
             .call(g => g.select('.domain').remove())
             .call(g => g.selectAll('.tick text')
-                .attr('dx', '0.8em')
+                .attr('dx', '1.5em')
                 .style('font-family', 'Montserrat')
                 .style('font-size', '12px')
                 .style('font-weight', '500')
@@ -83,31 +83,53 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
         .x(d => xScale(d.date) + xPosition)
         .y(d => yScale(d.close) + yPosition);
 
-    group.append('path')
+    const path = group.append('path')
         .datum(data)
         .attr('fill', 'none')
         .attr('stroke', '#17A2B8')
         .attr('stroke-width', 1.5)
         .attr('d', groupLine);
 
-    // circle
+    const totalLength = path.node().getTotalLength();
+
+    // Line animation
+    path.attr('stroke-dasharray', totalLength + " " + totalLength)
+        .attr('stroke-dashoffset', totalLength)
+        .transition()
+        .duration(2000)
+        .attr('stroke-dashoffset', 0);
+
+    // Circle
     const outerRingRadius = 9;
     const innerCircleRadius = 4.5;
     const circleX = xScale(lastData.date) + xPosition;
     const circleY = yScale(lastData.close) + yPosition;
-    group.append('circle')
+
+    const outerRing = group.append('circle')
         .attr('cx', circleX)
         .attr('cy', circleY)
-        .attr('r', outerRingRadius)
+        .attr('r', 0)
         .attr('fill', '#fff')
         .attr('stroke', '#17A2B8')
         .attr('stroke-width', 1.5)
         .attr('fill-opacity', 0.8);
-    group.append('circle')
+
+    // Outer ring animation
+    outerRing.transition()
+        .duration(3000)
+        .attr('r', outerRingRadius);
+
+    const innerCircle = group.append('circle')
         .attr('cx', circleX)
         .attr('cy', circleY)
-        .attr('r', innerCircleRadius)
+        .attr('r', 0) 
         .attr('fill', '#17A2B8');
+
+    // Inner circle animation
+    innerCircle.transition()
+        .duration(1000)
+        .delay(1000)
+        .attr('r', innerCircleRadius);
 
     return;
 };

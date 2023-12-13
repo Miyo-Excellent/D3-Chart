@@ -1,189 +1,138 @@
-/* imports from other style files located in the same folder */
-@import url('filters.css');
-@import url('header.css');
-
 body {
     background-color: #3C5164;
 }
 
-
-.tooltip {
-    position: absolute;
-    text-align: center;
-    width: 80px;
-    /* Aumento un poco el ancho para darle más espacio al texto */
-    height: 32px;
-    padding: 5px;
-    font: 12px sans-serif;
-    background: rgba(0, 0, 0, 0.7);
-    /* Cambio el color de fondo a un negro transparente para darle un aspecto más moderno */
-    color: #FFF;
-    /* Color de texto blanco para contraste con el fondo negro */
-    border: none;
-    /* Remuevo el borde */
-    border-radius: 16px;
-    /* Aumento el radio para obtener esquinas más redondeadas */
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
-    /* Agrego una sombra suave para darle profundidad */
-    pointer-events: none;
-    white-space: nowrap;
-    /* Asegura que el texto no se rompa en líneas múltiples */
-    overflow: hidden;
-    /* Oculta cualquier contenido que se desborde */
-    text-overflow: ellipsis;
-    /* Agrega puntos suspensivos si el contenido se desborda */
-}
-
-
-
-
-.chart-container {
-    display: flex;
-    height: 500px;
-}
-
-.chart {
-    width: 50%;
-    height: 100%;
-}
-
-.modal {
+.button-bar {
     display: none;
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.4);
-    z-index: 1000;
+    justify-content: space-between;
+    width: 0px;
+    position: relative;
+    top: 20px;
 }
 
-.modal-content {
+.button-group {
+    display: flex;
+}
+
+.left-group {
+    background-color: #FFFFFF0F;
+    border-radius: 11px 11px 0px 0px;
+    padding: 15px;
+    align-self: stretch;
+}
+
+.center-group {
     position: absolute;
-    width: 270px;
-    height: 123px;
-    top: 285px;
-    left: 728px;
-    padding: 16px 24px;
-    border-radius: 20px;
-    background: linear-gradient(99.84deg, #FBFBFF 6.9%, rgba(255, 255, 255, 0.83) 84.24%);
-    box-shadow: 0px 8px 16px 0px #0000001F;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 15px;
+    align-self: stretch;
 }
 
-.modal-content .container {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    height: 100%;
+.right-group {
+    padding: 15px 0px;
+    align-self: stretch;
 }
 
-.modal-content .container .first-child {
-    display: flex;
-}
-
-.modal-content .container .first-child .avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 15px;
-}
-
-.modal-content .container .first-child {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 16px;
-    font-weight: 400;
-    line-height: 24px;
-    text-align: left;
-}
-
-.modal-content .container .second-child {
-    display: flex;
-    flex-direction: row;
+.btn {
+    border-radius: 5px;
+    border: 1px solid #728594;
+    padding: 5px 8px;
     justify-content: center;
     align-items: center;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 10px;
-    font-weight: 700;
-    line-height: 12px;
-    text-align: left;
-}
-
-.w-50 {
-    width: 50%;
-    text-align: center;
-}
-
-.close {
-    cursor: pointer;
-    font-size: 20px;
-    font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
-    color: #000;
-    text-decoration: none;
-    cursor: pointer;
-}
-
-.d-block {
-    display: block;
-}
-
-.ml-5 {
-    margin-left: 5px;
-}
-
-.filter-modal {
-    display: none;
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.4);
-    z-index: 1000;
-}
-
-.filter-modal-content {
-    position: absolute;
-    width: 400px;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 16px 24px;
-    border-radius: 20px;
-    background: #FBFBFF;
-    box-shadow: 0px 8px 16px 0px #0000001F;
-}
-
-.filter-section {
-    margin-bottom: 20px;
-}
-
-.filter-section label {
-    font-weight: bold;
-    display: block;
-    margin-bottom: 10px;
-}
-
-.filter-section input[type="checkbox"] {
-    margin-right: 10px;
-}
-
-#applyFilters {
-    display: block;
-    margin: 0 auto;
-    padding: 10px 20px;
-    background-color: #007BFF;
-    color: #FFF;
-    border: none;
-    border-radius: 5px;
+    margin-right: 8px;
     cursor: pointer;
     transition: background-color 0.3s;
+    color: white;
+    font-family: Montserrat;
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 12px;
+    text-transform: uppercase;
 }
 
-#applyFilters:hover {
-    background-color: #0056b3;
+.btn.left {
+    background-color: transparent;
+}
+
+.btn.center {
+    background-color: transparent;
+}
+
+.btn.right {
+    background-color: transparent;
+    padding-left: 8px;
+    padding-right: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.btn.left.active,
+.btn.center.active {
+    background-color: #17A2B8;
+}
+
+.btn:hover {
+    background-color: #17A2B8;
+}
+
+.button-group .btn:last-child {
+    margin-right: 0;
+}
+
+#new-outlook {
+    border: none;
+    display: flex;
+    align-items: center;
+}
+
+#new-outlook span {
+    margin-right: 35px; 
+    position: relative;
+}
+
+#new-outlook span::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -3px;
+    width: 0;
+    height: 2px;
+    background-color: #17A2B8;
+    transition: width 0.3s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    50% { transform: translateX(2px); }
+    75% { transform: translateX(-2px); }
+}
+
+#new-outlook:hover span::after {
+    width: 100%;
+    animation: shake 0.5s ease;
+}
+
+#new-outlook img {
+    position: absolute;
+    right: 0px;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: transform 0.3s ease; 
+}
+
+#new-outlook:hover img {
+    transform: translateY(-50%) rotate(360deg);
+}
+
+#new-outlook:hover {
+    background-color: transparent;
+}
+
+.filter-icon {
+    margin-right: 5px;
 }
