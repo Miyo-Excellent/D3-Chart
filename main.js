@@ -1,40 +1,51 @@
-import { setContextFilter, setTimeFilter } from './core/filters.js';
-import { drawManager } from './core/drawCharts.js';
+import { getMarketData } from './apis/coinGekko/index.js';
+import { addButtonListeners } from './core/buttonUtils.js';
+import { buildChart, updateChart  } from './core/chartUtils.js';
 
-// Valores iniciales
-const initialContext = 1;
-const initialTime = 3650;
-const initialCurrency = 'AAPL';
+// Global states for the chart
+let chartState = {
+  timeframe: 3650, 
+  context: 1
+};
 
-// Dibujo inicial
-drawManager(initialContext, initialTime, initialCurrency);
 
-// Escuchadores de eventos para los filtros
-document.getElementById('contextFilters').addEventListener('click', (event) => {
-    const newContext = parseInt(event.target.dataset.value)
-    setContextFilter(newContext);  // Llama a la función desde core/filters.js
-    drawManager(newContext, initialTime);
-});
+/**
+ * Initializes the app.
+ * @returns {void}
+ * @example
+ * initApp();
+ */
+const initApp = async () => {
+  const width = 1880;
+  const height = 540;
+  const margin = { top: 20, right: 70, bottom: 50, left: 70 };
+  const { dates, prices } = await getMarketData(chartState.timeframe);
+  const data = dates.map((date, index) => ({
+    date: new Date(date),
+    close: prices[index]
+  }));
 
-document.getElementById('timeFilters').addEventListener('click', (event) => {
-    const newTime = event.target.dataset.value;
-    setTimeFilter(newTime);  // Llama a la función desde core/filters.js
-    drawManager(initialContext, newTime);
-});
+  buildChart('#chart-container', width, height, margin, chartState.context, data);
 
-// outlooksFilterModal
+  addButtonListeners('.left-group .btn', timeframe => {
+    chartState.timeframe = parseInt(timeframe, 10);
+    updateChartBasedOnState();
+  });
 
-// document.getElementById('openOutlooksFilter').addEventListener('click', function () {
-//     document.getElementById('outlooksFilterModal').style.display = 'block';
-// });
+  addButtonListeners('.center-group .btn', contextIndex => {
+    chartState.context = parseInt(contextIndex, 10);
+    updateChartBasedOnState();
+  });
 
-// document.getElementById('applyFilters').addEventListener('click', function () {
-//     document.getElementById('outlooksFilterModal').style.display = 'none';
-// });
+  const updateChartBasedOnState = async () => {
+    const { dates, prices } = await getMarketData(chartState.timeframe);
+    const data = dates.map((date, index) => ({
+      date: new Date(date),
+      close: prices[index]
+    }));
+    const context = chartState.context;
+    await updateChart('#chart-container', width, height, margin, context, data);
+  };
+};
 
-// Cerrar el modal de filtros cuando se presiona la tecla "ESC"
-// document.addEventListener('keydown', function (event) {
-//     if (event.key === 'Escape') {
-//         document.getElementById('outlooksFilterModal').style.display = 'none';
-//     }
-// });
+initApp();

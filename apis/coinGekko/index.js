@@ -29,22 +29,36 @@
 // }
 
 
-export function getMarketData(days) {
-    console.log('Executing getMarketData');
-    return fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=${days}`)
-        .then(response => response.json())
-        .then(data => {
-            var dates = data.prices.map(price => {
-                var date = new Date(price[0]);
-                return date.toISOString().slice(0, 10);
-            });
+export async function getMarketData(days) {
+    const cachedData = localStorage.getItem('data');
+    
+    if (cachedData) {
+        console.log('Data from cache');
+        const parsedData = JSON.parse(cachedData);
+        
+        if (parsedData.dates.length >= days) {
+            const dates = parsedData.dates.slice(0, days);
+            const prices = parsedData.prices.slice(0, days);
+            return { dates, prices };
+        }
+    }
 
-            var prices = data.prices.map(price => price[1]);
+    try {
+        const response = await fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=${days}`);
+        const data = await response.json();
+        
+        const dates = data.prices.map(price => {
+            const date = new Date(price[0]);
+            return date.toISOString().slice(0, 10);
+        });
 
-            return {
-                dates: dates,
-                prices: prices
-            };
-        })
-        .catch(error => console.error(error));
+        const prices = data.prices.map(price => price[1]);
+
+        localStorage.setItem('data', JSON.stringify({dates, prices}));
+        console.log('Saving data to cache');
+
+        return { dates, prices };
+    } catch (error) {
+        console.error('Error fetching market data:', error);
+    }
 }
