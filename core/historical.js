@@ -14,20 +14,36 @@ import { createRect, valueInThousands, tickValues, buildCircle } from '../helper
  * @returns {Promise<void>}
  */
 
-export const buildHistoricalChart = (group, width, height, xPosition, yPosition, only, data, lastData, highestValue) => {
-    createRect(group, xPosition, yPosition, width, height, '#293C4B');
+export const buildHistoricalChart = (group, width, height, xPosition, yPosition, only, data, lastData, highestValue, hasOverflow = false) => {
+    const overflowHeight = hasOverflow ? 35 : 0; // Altura del desbordamiento
+    const adjustedHeight = height - overflowHeight; // Altura ajustada para el gráfico
+
+    if (hasOverflow) {
+        // Aplicar el patrón al área de desbordamiento en la parte superior
+        group.append('rect')
+            .attr('x', xPosition)
+            .attr('y', yPosition)
+            .attr('width', width)
+            .attr('height', overflowHeight)
+            .attr('fill', "#293C4B");
+
+        // Ajustar la posición y para el resto del gráfico
+        yPosition += overflowHeight;
+    }
+
+    createRect(group, xPosition, yPosition, width, adjustedHeight, '#293C4B');
 
     const xDomain = d3.extent(data, d => d.date);
     const yDomain = [0, highestValue];
 
     const xScale = d3.scaleUtc().domain(xDomain).range([0, width]);
-    const yScale = d3.scaleLinear().domain(yDomain).range([height, 0]);
+    const yScale = d3.scaleLinear().domain(yDomain).range([adjustedHeight, 0]);
 
     const ticks = tickValues(highestValue, 9, 10);
 
     // x axis
     group.append('g')
-        .attr('transform', `translate(${xPosition},${yPosition + height})`)
+        .attr('transform', `translate(${xPosition},${yPosition + adjustedHeight})`)
         .call(d3.axisBottom(xScale).tickSize(0))
         .call(g => g.select('.domain').remove())
         .call(g => g.selectAll('.tick text')

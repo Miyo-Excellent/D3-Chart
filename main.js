@@ -25,7 +25,7 @@ const initApp = async () => {
     close: prices[index]
   }));
 
-  buildChart('#chart-container', width, height, margin, chartState.context, data);
+  buildChart('#chart-container', width, height, margin, chartState.context, data, chartState.timeframe);
 
   addButtonListeners('.left-group .btn', timeframe => {
     chartState.timeframe = parseInt(timeframe, 10);
@@ -43,8 +43,7 @@ const initApp = async () => {
       date: new Date(date),
       close: prices[index]
     }));
-    const context = chartState.context;
-    await updateChart('#chart-container', width, height, margin, context, data);
+    await updateChart('#chart-container', width, height, margin, chartState.context, data, chartState.timeframe);
   };
 };
 

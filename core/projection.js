@@ -14,31 +14,73 @@ import { generateDummyProjectionsData } from '../helpers/dummyData.js';
  * @returns {Promise<void>}
  */
 
-export const buildProjectionChart = (group, width, height, xPosition, yPosition, only, data, lastData, highestValue) => {
-    createRect(group, xPosition, yPosition, width, height, '#FFFFFF');
-    drawOuterLines(group, xPosition, yPosition, height, width);
-    
+export const buildProjectionChart = (group, width, height, xPosition, yPosition, only, data, lastData, highestValue, hasOverflow) => {
+    const overflowWidth = hasOverflow ? 35 : 0;
+    const adjustedWidth = width - overflowWidth;
+    const overflowHeight = hasOverflow ? 35 : 0; // Altura del desbordamiento
+    const adjustedHeight = height - overflowHeight; // Altura ajustada para el gráfico
+
+    // Si hay desbordamiento, dibujar el área de desbordamiento primero
+    if (hasOverflow) {
+        const defs = group.append("defs");
+        const pattern = defs.append("pattern")
+            .attr("id", "diagonalStripes")
+            .attr("width", 30)
+            .attr("height", 30)
+            .attr("patternUnits", "userSpaceOnUse")
+            .attr("patternTransform", "rotate(45)");
+
+        pattern.append("rect")
+            .attr("width", 15)
+            .attr("height", 30)
+            .attr("fill", "#FFFFFF");
+
+        pattern.append("rect")
+            .attr("width", 15)
+            .attr("height", 30)
+            .attr("transform", "translate(15,0)")
+            .attr("fill", "#ECECEC");
+
+        // Aplicar el patrón al área de desbordamiento en la parte superior
+        group.append('rect')
+            .attr('x', xPosition)
+            .attr('y', yPosition)
+            .attr('width', width)
+            .attr('height', overflowHeight)
+            .attr('fill', "url(#diagonalStripes)");
+
+        // Ajustar la posición y para el resto del gráfico
+        yPosition += overflowHeight;
+    }
+
+    // Crear el fondo del gráfico en la posición ajustada
+    createRect(group, xPosition, yPosition, width, adjustedHeight, '#FFFFFF');
+    drawOuterLines(group, xPosition, yPosition, adjustedHeight, adjustedWidth, hasOverflow);
+    if (hasOverflow) {
+        drawOverflowRect(group, xPosition + adjustedWidth, yPosition, adjustedHeight, overflowHeight);
+    }
+
     const today = new Date();
     // dummy data
     const generateProjections = generateDummyProjectionsData(today, '2033-01-01', lastData.close);
     const projectionData = generateProjections.map(p => ({
-      startDate: new Date(p.start_date),
-      endDate: new Date(p.end_date),
-      minValue: p.min_value,
-      maxValue: p.max_value
+        startDate: new Date(p.start_date),
+        endDate: new Date(p.end_date),
+        minValue: p.min_value,
+        maxValue: p.max_value
     }));
     // dummy data
 
     const xDomain = [today, d3.utcYear.offset(today, 10)];
     const yDomain = [0, highestValue];
 
-    const xScale = d3.scaleUtc().domain(xDomain).range([0, width]);
-    const yScale = d3.scaleLinear().domain(yDomain).range([height, 0]);
+    const xScale = d3.scaleUtc().domain(xDomain).range([0, adjustedWidth]);
+    const yScale = d3.scaleLinear().domain(yDomain).range([adjustedHeight, 0]);
 
     const ticks = tickValues(highestValue, 9, 10);
 
     group.append('g')
-        .attr('transform', `translate(${xPosition},${yPosition + height})`)
+        .attr('transform', `translate(${xPosition},${yPosition + adjustedHeight})`)
         .call(d3.axisBottom(xScale).tickSize(0))
         .call(g => g.select('.domain').remove())
         .call(g => g.selectAll('.tick text')
@@ -51,29 +93,11 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
             .style('fill', '#D6D9DC'));
 
     group.append('g')
-        .attr('transform', `translate(${xPosition + width},${yPosition})`)
+        .attr('transform', `translate(${xPosition + adjustedWidth},${yPosition})`)
         .call(d3.axisRight(yScale).tickSize(0).tickFormat(valueInThousands).tickValues(ticks))
         .call(g => g.select('.domain').remove())
         .call(g => g.selectAll('.tick text')
-        .attr('dx', '1.5em')
-        .style('font-family', 'Montserrat')
-        .style('font-size', '12px')
-        .style('font-weight', '500')
-        .style('line-height', '15px')
-        .style('letter-spacing', '0.4285714030265808px')
-        .style('text-align', 'left')
-        .style('fill', '#D6D9DC'))
-        .call(g => g.selectAll('.tick line')
-            .attr('stroke', '#ECECEC')
-            .attr('x2', -width));
-
-    if (only === true) {
-        group.append('g')
-        .attr('transform', `translate(${xPosition},${yPosition})`)
-        .call(d3.axisLeft(yScale).tickSize(0).tickFormat(valueInThousands).tickValues(ticks))
-        .call(g => g.select('.domain').remove())
-        .call(g => g.selectAll('.tick text')
-            .attr('dx', '-1.5em')
+            .attr('dx', hasOverflow ? '4.5em' : '1.5em')
             .style('font-family', 'Montserrat')
             .style('font-size', '12px')
             .style('font-weight', '500')
@@ -83,43 +107,96 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
             .style('fill', '#D6D9DC'))
         .call(g => g.selectAll('.tick line')
             .attr('stroke', '#ECECEC')
-            .attr('x2', width));
+            .attr('x2', -adjustedWidth));
 
-        buildCircle(group, xPosition, yPosition, xScale, yScale, lastData, true);
-    }else{
-       const defs = group.append("defs");
-       const pattern = defs.append("pattern")
-           .attr("id", "splitPattern")
-           .attr("width", 10)
-           .attr("height", 10)
-           .attr("patternUnits", "userSpaceOnUse");
-       pattern.append("rect")
-           .attr("width", 10)
-           .attr("height", 5)
-           .attr("transform", "translate(0,0)")
-           .attr("fill", "#293C4B");
-       pattern.append("rect")
-           .attr("width", 10)
-           .attr("height", 5)
-           .attr("transform", "translate(0,5)")
-           .attr("fill", "#FFFFFF");
+    if (only === true) {
+        group.append('g')
+            .attr('transform', `translate(${xPosition},${yPosition})`)
+            .call(d3.axisLeft(yScale).tickSize(0).tickFormat(valueInThousands).tickValues(ticks))
+            .call(g => g.select('.domain').remove())
+            .call(g => g.selectAll('.tick text')
+                .attr('dx', '-1.5em')
+                .style('font-family', 'Montserrat')
+                .style('font-size', '12px')
+                .style('font-weight', '500')
+                .style('line-height', '15px')
+                .style('letter-spacing', '0.4285714030265808px')
+                .style('text-align', 'left')
+                .style('fill', '#D6D9DC'))
+            .call(g => g.selectAll('.tick line')
+                .attr('stroke', '#ECECEC')
+                .attr('x2', adjustedWidth));
+    } else {
+        const defs = group.append("defs");
+        const pattern = defs.append("pattern")
+            .attr("id", "splitPattern")
+            .attr("width", 10)
+            .attr("height", 10)
+            .attr("patternUnits", "userSpaceOnUse");
+        pattern.append("rect")
+            .attr("width", 10)
+            .attr("height", 5)
+            .attr("transform", "translate(0,0)")
+            .attr("fill", "#293C4B");
+        pattern.append("rect")
+            .attr("width", 10)
+            .attr("height", 5)
+            .attr("transform", "translate(0,5)")
+            .attr("fill", "#FFFFFF");
 
-       group.append("line")
-           .attr("x1", xPosition)
-           .attr("y1", yPosition)
-           .attr("x2", xPosition)
-           .attr("y2", yPosition + height)
-           .attr("stroke", "url(#splitPattern)")
-           .attr("stroke-width", 2);
+        group.append("line")
+            .attr("x1", xPosition)
+            .attr("y1", yPosition)
+            .attr("x2", xPosition)
+            .attr("y2", yPosition + adjustedHeight)
+            .attr("stroke", "url(#splitPattern)")
+            .attr("stroke-width", 2);
     }
 
     populateChart(group, xPosition, yPosition, xScale, yScale, projectionData, lastData);
 
+    if (hasOverflow) {
+        // Define the pattern
+        const defs = group.append("defs");
+        const pattern = defs.append("pattern")
+            .attr("id", "diagonalStripes")
+            .attr("width", 30) // Aumenta el ancho del patrón para que las líneas sean menos frecuentes
+            .attr("height", 30) // Aumenta el alto del patrón para que las líneas sean más grandes
+            .attr("patternUnits", "userSpaceOnUse")
+            .attr("patternTransform", "rotate(45)"); // Rotar el patrón 45 grados
+
+        // Definir el primer rectángulo del patrón
+        pattern.append("rect")
+            .attr("width", 15) // Aumenta el ancho del rectángulo dentro del patrón
+            .attr("height", 30) // El alto del rectángulo es igual al alto del patrón
+            .attr("transform", "translate(0,0)") // No necesita traslación, comienza en 0,0
+            .attr("fill", "#FFFFFF"); // Color blanco
+
+        // Definir el segundo rectángulo del patrón
+        pattern.append("rect")
+            .attr("width", 15) // Aumenta el ancho del rectángulo
+            .attr("height", 30) // El alto del rectángulo es igual al alto del patrón
+            .attr("transform", "translate(15,0)") // Trasladar a la derecha del primer rectángulo
+            .attr("fill", "#ECECEC"); // Color gris claro
+
+        // Aplicar el patrón al rectángulo de desbordamiento
+        group.append('rect')
+            .attr('x', xPosition + adjustedWidth)
+            .attr('y', yPosition)
+            .attr('width', overflowWidth)
+            .attr('height', adjustedHeight + 1)
+            .attr('fill', "url(#diagonalStripes)");
+    }
+
+
+    if (only === true) {
+        buildCircle(group, xPosition, yPosition, xScale, yScale, lastData, true);
+    }
 
     return;
 };
 
-const drawOuterLines = (group, xPosition, yPosition, height, width) => {
+const drawOuterLines = (group, xPosition, yPosition, height, width, hasOverflow) => {
     const horizontalLine = group.append('line')
         .attr('x1', xPosition)
         .attr('y1', yPosition + height + 12)
@@ -131,7 +208,7 @@ const drawOuterLines = (group, xPosition, yPosition, height, width) => {
     horizontalLine.transition()
         .duration(1500)
         .attr('x2', xPosition + width - 6)
-        .on('end', drawInclinedLine); 
+        .on('end', drawInclinedLine);
 
     function drawInclinedLine() {
         const inclineLength = 12;
@@ -142,8 +219,8 @@ const drawOuterLines = (group, xPosition, yPosition, height, width) => {
         const offsetY = Math.sin(angleRadians) * halfIncline;
 
         group.append('line')
-            .attr('x1', xPosition + width - 6 - offsetX) 
-            .attr('y1', yPosition + height + 12 + offsetY) 
+            .attr('x1', xPosition + width - 6 - offsetX)
+            .attr('y1', yPosition + height + 12 + offsetY)
             .attr('x2', xPosition + width - 6 - offsetX) // Comenzar con la línea vertical coincidiendo con la horizontal
             .attr('y2', yPosition + height + 12 + offsetY)
             .attr('stroke', '#BDC2C7')
@@ -154,43 +231,45 @@ const drawOuterLines = (group, xPosition, yPosition, height, width) => {
             .attr('y2', yPosition + height + 12 - offsetY);
     }
 
+    const xPositionAdjusted = hasOverflow ? xPosition + 35 : xPosition;
+
     const verticalLine = group.append('line')
-        .attr('x1', xPosition + width + 10)
+        .attr('x1', xPositionAdjusted + width + 10)
         .attr('y1', yPosition + height)
-        .attr('x2', xPosition + width + 10)
+        .attr('x2', xPositionAdjusted + width + 10)
         .attr('y2', yPosition + height)
         .attr('stroke', '#BDC2C7')
         .attr('stroke-width', 1.5);
 
     verticalLine.transition()
-            .duration(1500)
-            .attr('y2', yPosition + 4)
-            .on('end', drawInclinedLineY); 
+        .duration(1500)
+        .attr('y2', yPosition + 4)
+        .on('end', drawInclinedLineY);
 
     function drawInclinedLineY() {
         const inclineLength = 10;
         const angle = 2;
         const angleRadians = (angle * Math.PI) / 180;
-    
+
         const offsetX = Math.cos(angleRadians) * inclineLength;
         const offsetY = Math.sin(angleRadians) * inclineLength;
-    
+
         // Comienza con una línea de longitud cero (o muy pequeña)
         const inclinedLine = group.append('line')
-            .attr('x1', xPosition + width + 10 + offsetX / 2)
-            .attr('y1', yPosition + 6 + offsetY / 2) 
-            .attr('x2', xPosition + width + 10 + offsetX / 2) // Punto inicial igual a x1
+            .attr('x1', xPositionAdjusted + width + 10 + offsetX / 2)
+            .attr('y1', yPosition + 6 + offsetY / 2)
+            .attr('x2', xPositionAdjusted + width + 10 + offsetX / 2) // Punto inicial igual a x1
             .attr('y2', yPosition + 6 + offsetY / 2) // Punto inicial igual a y1
             .attr('stroke', '#BDC2C7')
             .attr('stroke-width', 1.5);
-    
+
         // Anima la línea hasta alcanzar la longitud y orientación deseadas
         inclinedLine.transition()
             .duration(500)
-            .attr('x2', xPosition + width + 5) // Punto final en X
+            .attr('x2', xPositionAdjusted + width + 5) // Punto final en X
             .attr('y2', yPosition + 3 - offsetY / 2); // Punto final en Y
     }
-            
+
 };
 
 const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionData, lastData) => {
@@ -205,7 +284,7 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
 
         // Crear un id único para cada gradiente
         const gradientId = `gradient-${i}`;
-        
+
         const offset = ((yLastDatum - yMax) / (yMin - yMax)) * 100;
 
         const gradient = defs.append('linearGradient')
@@ -235,13 +314,13 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
         const borderRadius = Math.min(maxBorderRadius, rectHeight / 2)
 
         const rect = group.append('rect')
-        .attr('x', xStart)
-        .attr('width', xEnd - xStart)
-        .attr('y', yMin)
-        .attr('height', 0)
-        .attr('fill', `url(#${gradientId})`)
-        .attr('rx', borderRadius)
-        .attr('ry', borderRadius);
+            .attr('x', xStart)
+            .attr('width', xEnd - xStart)
+            .attr('y', yMin)
+            .attr('height', 0)
+            .attr('fill', `url(#${gradientId})`)
+            .attr('rx', borderRadius)
+            .attr('ry', borderRadius);
 
         rect.transition()
             .duration(1000)
@@ -249,257 +328,87 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
             .attr('y', yMax)
             .attr('height', rectHeight);
     });
-}
+};
 
-    // const parseDate = d3.timeParse("%Y-%m-%d");
-    // const today = new Date();
-    // const tenYearsFromNow = new Date(today.getFullYear() + 10, today.getMonth(), today.getDate());
+const drawOverflowRect = (group, xPosition, yPosition, height, width) => {
+    // Dibuja la línea horizontal y la línea inclinada al final de la animación
+    const horizontalLine = group.append('line')
+        .attr('x1', xPosition)
+        .attr('y1', yPosition + height + 12)
+        .attr('x2', xPosition) // comienza en la posición X inicial
+        .attr('y2', yPosition + height + 12)
+        .attr('stroke', '#BDC2C7')
+        .attr('stroke-width', 1.5);
 
-    // const data = [
-    //     { date: today, value: 10 },
-    //     { date: parseDate("2025-01-01"), value: 50 },
-    //     { date: parseDate("2026-01-01"), value: 20 },
-    //     { date: parseDate("2028-01-01"), value: 90 },
-    //     { date: parseDate("2025-01-01"), value: 130 },
-    //     { date: parseDate("2029-01-01"), value: 150 },
-    //     { date: parseDate("2033-09-31"), value: 30 },
-    //     { date: parseDate("2034-01-01"), value: 300 },
-    //     { date: tenYearsFromNow, value: 40 },
-    // ];
+    // Anima la línea horizontal desde la posición inicial hasta el ancho especificado
+    horizontalLine.transition()
+        .duration(1500)
+        .attr('x2', xPosition + width) // termina en la posición X final
+        .on('end', drawInclinedLine); // al final de la animación, dibuja la línea inclinada
 
-    // const yScale = d3.scaleLinear()
-    //     .domain([0, 90])
-    //     .range([height - margin.bottom, margin.top]);
+    function drawInclinedLine() {
+        const inclineLength = 12;
+        const angle = 65;
+        const angleRadians = (angle * Math.PI) / 180;
+        const halfIncline = inclineLength / 2;
+        const offsetX = Math.cos(angleRadians) * halfIncline;
+        const offsetY = Math.sin(angleRadians) * halfIncline;
 
-    // const xScale = d3.scaleTime()
-    //     .domain([today, d3.timeDay.offset(tenYearsFromNow, -1)])
-    //     .range([margin.left, width - margin.right]);
-
-    // const svg = chartContainer.append("svg")
-    //     .attr("width", width)
-    //     .attr("height", height);
-
-    // const currentData = data.filter(d => d.value <= 90);
-
-
-    // drawMainDomain(svg, xScale, yScale, currentData);
-
-    // if (extended === true) {
-    // const futureData = data.filter(d => d.date >= tenYearsFromNow && d.value <= 90);
-    // const extendedData = data.filter(d => d.value > 90 && d.date < tenYearsFromNow);
-    // const mixedData = data.filter(d => d.date >= tenYearsFromNow && d.value > 90);
-
-    // drawDiscontinuityLine(svg, xScale, yScale);
-    // drawFutureDomain(svg, futureData, yScale);
-    // drawExtendedDomain(svg, extendedData, xScale);
-    // drawMixedFutureExtendedDomain(svg, mixedData, yScale);
-    // }
-
-    // Main Domain: Gráfico principal - Inicio
-
-    /** 
-    * Se encarga de dibujar el gráfico principal, el cual cuenta con su propio dominio y escala para el eje X y Y.
-    * @param svg: SVG donde se dibujará el gráfico.
-    * @param xScale: Escala para el eje X.
-    * @param yScale: Escala para el eje Y.
-    * @param currentData: Datos que alimentarán el gráfico principal.
-    */
-    // function drawMainDomain(svg, xScale, yScale, currentData) {
-    //     drawXAxis(svg, xScale);
-    //     drawYAxis(svg, yScale);
-    //     drawCurrentData(svg, currentData, xScale, yScale);
-    // }
-
-    /**
-     * Se encarga de dibujar el eje X, del gráfico principal, el cual cuenta con 10 ticks, su formato es de años y su valor máximo es de 10 años a partir de la fecha actual.
-     * @param svg: SVG donde se dibujará el eje X.
-     * @param xScale: Escala para el eje X.
-     */
-    // function drawXAxis(svg, xScale) {
-    //     const xAxis = d3.axisBottom(xScale)
-    //         .ticks(10)
-    //         .tickFormat(d3.timeFormat("%Y"))
-    //         .tickValues(xScale.ticks(10).filter(d => d < tenYearsFromNow));
-
-    //     svg.append("g")
-    //         .attr("transform", `translate(0,${height - margin.bottom})`)
-    //         .call(xAxis);
-    // }
-
-    /**
-     * Se encarga de dibujar el eje Y, del gráfico principal, el cual cuenta con 10 ticks, su formato es de billones y su valor máximo es de 90 billones.
-     * @param svg: SVG donde se dibujará el eje Y.
-     * @param yScale: Escala para el eje Y.
-     */
-    // function drawYAxis(svg, yScale) {
-    //     const yAxis = d3.axisLeft(yScale)
-    //         .tickValues(yScale.ticks().filter(tick => tick < 100))
-    //         .tickFormat(d => `$${d}B`);
-    //     svg.append("g")
-    //         .attr("transform", `translate(${margin.left},0)`)
-    //         .call(yAxis);
-    // }
-
-    /**
-     * Se encarga de dibujar los puntos azules, del gráfico principal, los cuales representan los datos actuales.
-     * @param svg: SVG donde se dibujarán los puntos.
-     * @param currentData: Datos que alimentarán los puntos.
-     * @param xScale: Escala para el eje X.
-     * @param yScale: Escala para el eje Y.
-     */
-    // function drawCurrentData(svg, currentData, xScale, yScale) {
-    //     svg.selectAll("circle.current")
-    //         .data(currentData)
-    //         .enter()
-    //         .append("circle")
-    //         .attr("class", "current")
-    //         .attr("cx", d => xScale(d.date))
-    //         .attr("cy", d => yScale(d.value))
-    //         .attr("r", 5)
-    //         .attr("fill", "blue");
-    // }
-
-    // Main Domain: Gráfico principal - Fin
+        // Dibuja la línea inclinada al comienzo de la línea horizontal
+        group.append('line')
+            .attr('x1', xPosition + offsetX)
+            .attr('y1', yPosition + height + 12 - offsetY)
+            .attr('x2', xPosition + offsetX) // comienza donde termina la línea horizontal
+            .attr('y2', yPosition + height + 12 - offsetY)
+            .attr('stroke', '#BDC2C7')
+            .attr('stroke-width', 1.5)
+            .transition()
+            .duration(500)
+            .attr('x2', xPosition - offsetX) // termina desplazándose hacia la izquierda
+            .attr('y2', yPosition + height + 12 + offsetY); // y hacia abajo debido al ángulo negativo
+    }
 
 
-    // Future Domain: Gráfico futuro - Inicio
+    // vertical line
+    const xPositionAdjusted = xPosition + 5;
 
-    /**
-     * Se encarga de dibujar la línea discontinua, la cual representa el límite entre el gráfico principal y el futuro.
-     * @param svg: SVG donde se dibujará la línea.
-     * @param xScale: Escala para el eje X.
-     * @param yScale: Escala para el eje Y.
-     */
-    // function drawDiscontinuityLine(svg, xScale, yScale) {
-    //     const endOfCurrentXAxis = xScale(d3.timeDay.offset(tenYearsFromNow, -1));
-    //     svg.append("line")
-    //         .attr("x1", endOfCurrentXAxis)
-    //         .attr("y1", margin.top)
-    //         .attr("x2", endOfCurrentXAxis)
-    //         .attr("y2", height - margin.bottom)
-    //         .attr("stroke", "#d3d3d3")
-    //         .attr("stroke-width", 2)
-    //         .attr("stroke-dasharray", "5,5");
+    const verticalLine = group.append('line')
+        .attr('x1', xPositionAdjusted + width + 5)
+        .attr('y1', 20)
+        .attr('x2', xPositionAdjusted + width + 5)
+        .attr('y2', 20) // Comienza con y2 en el mismo punto que y1 para que la línea "crezca" desde ese punto
+        .attr('stroke', '#BDC2C7')
+        .attr('stroke-width', 1.5);
 
-    //     const startOfExtendedYAxis = yScale(90);
-    //     svg.append("line")
-    //         .attr("x1", margin.left)
-    //         .attr("x2", width - margin.right)
-    //         .attr("y1", startOfExtendedYAxis)
-    //         .attr("y2", startOfExtendedYAxis)
-    //         .attr("stroke", "#d3d3d3")
-    //         .attr("stroke-width", 2)
-    //         .attr("stroke-dasharray", "5,5");
-    // }
+    verticalLine.transition()
+        .duration(1500)
+        .attr('y2', yPosition) // Punto final en Y
+        .on('end', () => drawInclinedLineY(group, xPositionAdjusted + width + 5, yPosition));
 
-    /**
-     * Se encarga el dominio futuro, el cual cuenta con su propio dominio y escala para el eje X y ocupa el mismo eje Y que el gráfico principal.
-     * @param svg: SVG donde se dibujará el dominio futuro.
-     * @param futureData: Datos que alimentarán el dominio futuro.
-     * @param yScale: Escala para el eje Y.
-     */
-    // function drawFutureDomain(svg, futureData, yScale) {
-    //     const futureWidth = 50;
-    //     const middleOfFutureArea = futureWidth / 2;
+        function drawInclinedLineY() {
+            const inclineLength = 10;
+            const angle = 2;
+            const angleRadians = (angle * Math.PI) / 180;
+        
+            const offsetX = Math.cos(angleRadians) * inclineLength;
+            const offsetY = Math.sin(angleRadians) * inclineLength;
+        
+            // Define el punto de inicio de la línea en su posición final
+            const inclinedLine = group.append('line')
+                .attr('x1', xPositionAdjusted + width + 5 - offsetX / 2)
+                .attr('y1', yPosition - 1 + offsetY / 2)
+                .attr('x2', xPositionAdjusted + width + 5 - offsetX / 2) // Punto inicial en X igual a x1
+                .attr('y2', yPosition - 1 + offsetY / 2) // Punto inicial en Y igual a y1
+                .attr('stroke', '#BDC2C7')
+                .attr('stroke-width', 1.5);
+        
+            // Anima la línea hacia atrás hasta alcanzar la longitud y orientación deseadas
+            inclinedLine.transition()
+                .duration(500)
+                .attr('x2', xPositionAdjusted + width + 5 + offsetX / 2) // Punto final en X
+                .attr('y2', yPosition + 2 - offsetY / 2); // Punto final en Y
+        }
+        
 
-    //     const xScaleFuture = d3.scaleLinear()
-    //         .domain([0, 1, 2])
-    //         .range([0, middleOfFutureArea, futureWidth]);
+};
 
-    //     const xAxisFuture = d3.axisBottom(xScaleFuture)
-    //         .tickValues([1])
-    //         .tickFormat(d => d === 1 ? '+10YRS' : '')
-    //         .tickSizeOuter(0);
-
-    //     const startOfFutureAxis = width - margin.right + middleOfFutureArea;
-
-    //     svg.append("g")
-    //         .attr("transform", `translate(${startOfFutureAxis - middleOfFutureArea}, ${height - margin.bottom})`)
-    //         .call(xAxisFuture);
-
-    //     svg.selectAll("circle.future")
-    //         .data(futureData)
-    //         .enter()
-    //         .append("circle")
-    //         .attr("class", "future")
-    //         .attr("cx", startOfFutureAxis)
-    //         .attr("cy", d => yScale(d.value))
-    //         .attr("r", 5)
-    //         .attr("fill", "red");
-    // }
-
-    // Future Domain: Gráfico futuro - Fin
-
-    // Extended Domain: Gráfico extendido - Inicio
-
-    /**
-     * Se encarga de dibujar el dominio extendido, el cual cuenta con su propio dominio y escala para el eje Y y ocupa el mismo eje X que el gráfico principal.
-     * @param svg: SVG donde se dibujará el dominio extendido.
-     * @param extendedData: Datos que alimentarán el dominio extendido.
-     * @param xScale: Escala para el eje X.
-     */
-    // function drawExtendedDomain(svg, extendedData, xScale) {
-    //     const extendedHeight = 50;
-    //     const middleOfExtendedArea = yScale(90) - extendedHeight / 2;
-
-    //     const yScaleExtended = d3.scaleLinear()
-    //         .domain([0, 1, 2])
-    //         .range([yScale(90), middleOfExtendedArea, yScale(90) - extendedHeight]);
-
-    //     const yAxisExtended = d3.axisLeft(yScaleExtended)
-    //         .tickValues([1])
-    //         .tickFormat(d => d === 1 ? '+3X' : '')
-    //         .tickSizeOuter(0);
-
-    //     svg.append("g")
-    //         .attr("transform", `translate(${margin.left},0)`)
-    //         .call(yAxisExtended);
-
-    //     svg.selectAll("circle.extended")
-    //         .data(extendedData)
-    //         .enter()
-    //         .append("circle")
-    //         .attr("class", "extended")
-    //         .attr("cx", d => xScale(d.date))
-    //         .attr("cy", middleOfExtendedArea)
-    //         .attr("r", 5)
-    //         .attr("fill", "green");
-    // }
-
-    // Extended Domain: Gráfico extendido - Fin
-
-
-    // Mixed Future Extended Domain: Gráfico mixto - Inicio
-
-    /**
-     * Se encarga de dibujar el dominio mixto, el cual cuenta con su propio dominio y escala para el eje X y Y.
-     * @param svg: SVG donde se dibujará el dominio mixto.
-     * @param mixedData: Datos que alimentarán el dominio mixto.
-     * @param yScale: Escala para el eje Y.
-     */
-
-    // function drawMixedFutureExtendedDomain(svg, mixedData, yScale) {
-    //     const futureXIntersection = width - margin.right + (50 / 2);
-    //     const extendedYIntersection = yScale(90) - (50 / 2);
-
-    //     const xScaleMixed = d3.scaleLinear()
-    //         .domain([0, 1, 2])
-    //         .range([futureXIntersection - 25, futureXIntersection, futureXIntersection + 25]);
-
-    //     const yScaleMixed = d3.scaleLinear()
-    //         .domain([0, 1, 2])
-    //         .range([extendedYIntersection + 25, extendedYIntersection, extendedYIntersection - 25]);
-
-    //     svg.selectAll("circle.mixed")
-    //         .data(mixedData)
-    //         .enter()
-    //         .append("circle")
-    //         .attr("class", "mixed")
-    //         .attr("cx", xScaleMixed(1))
-    //         .attr("cy", yScaleMixed(1))
-    //         .attr("r", 5)
-    //         .attr("fill", "purple");
-    // }
-
-    // Mixed Future Extended Domain: Gráfico mixto - Fin
-// }
