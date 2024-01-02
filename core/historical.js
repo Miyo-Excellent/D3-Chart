@@ -1,4 +1,4 @@
-import { createRect, valueInThousands, tickValues } from '../helpers/helper.js';
+import { createRect, valueInThousands, tickValues, buildCircle } from '../helpers/helper.js';
 
 /**
  * Se encarga de construir el gráfico de histórico.
@@ -99,38 +99,7 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
         .duration(2000)
         .attr('stroke-dashoffset', 0);
 
-    // Circle
-    const outerRingRadius = 9;
-    const innerCircleRadius = 4.5;
-    const circleX = xScale(lastData.date) + xPosition;
-    const circleY = yScale(lastData.close) + yPosition;
-
-    const outerRing = group.append('circle')
-        .attr('cx', circleX)
-        .attr('cy', circleY)
-        .attr('r', 0)
-        .attr('fill', '#fff')
-        .attr('stroke', '#17A2B8')
-        .attr('stroke-width', 1.5)
-        .attr('fill-opacity', 0.8);
-
-    // Outer ring animation
-    outerRing.transition()
-        .duration(3000)
-        .attr('r', outerRingRadius);
-
-    const innerCircle = group.append('circle')
-        .attr('cx', circleX)
-        .attr('cy', circleY)
-        .attr('r', 0) 
-        .attr('fill', '#17A2B8');
-
-    // Inner circle animation
-    innerCircle.transition()
-        .duration(1000)
-        .delay(1000)
-        .attr('r', innerCircleRadius);
+    buildCircle(group, xPosition, yPosition, xScale, yScale, lastData);
 
     return;
 };
-

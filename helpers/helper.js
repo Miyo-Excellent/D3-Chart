@@ -38,3 +38,38 @@ export const tickValues = (highestValue, tickCount, length) => {
   const tickInterval = highestValue / tickCount;
   return Array.from({ length: length }, (_, i) => i * tickInterval);
 }
+
+export const buildCircle = (group, xPosition, yPosition, xScale, yScale, lastData, isProjection = false) => {
+
+  // Circle
+  const outerRingRadius = 9;
+  const innerCircleRadius = 4.5;
+  const circleX = xScale(lastData.date) + xPosition + (isProjection ? 10 : 0);
+  const circleY = yScale(lastData.close) + yPosition;
+
+  const outerRing = group.append('circle')
+      .attr('cx', circleX)
+      .attr('cy', circleY)
+      .attr('r', 0)
+      .attr('fill', '#fff')
+      .attr('stroke', '#17A2B8')
+      .attr('stroke-width', 1.5)
+      .attr('fill-opacity', 0.8);
+
+  // Outer ring animation
+  outerRing.transition()
+      .duration(3000)
+      .attr('r', outerRingRadius);
+
+  const innerCircle = group.append('circle')
+      .attr('cx', circleX)
+      .attr('cy', circleY)
+      .attr('r', 0) 
+      .attr('fill', '#17A2B8');
+
+  // Inner circle animation
+  innerCircle.transition()
+      .duration(1000)
+      .delay(1000)
+      .attr('r', innerCircleRadius);
+}

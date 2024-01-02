@@ -4,30 +4,7 @@
  * @param {string} symbol - El símbolo de la acción a consultar (ej: "MSFT", "AAPL", "GOOGL", etc.)
  * @param {int} days - El número de días a consultar (ej: 7, 30, 90, etc.)
  * @returns {object} - Un objeto con dos propiedades: "dates" y "prices", ambas son arrays.
- * @example
- * getMarketData("MSFT", 7);
- * // Devuelve un objeto con dos arrays: "dates" y "prices".
- * // "dates" contiene las fechas de los últimos 7 días.
- * // "prices" contiene los precios de cierre de los últimos 7 días.
- */
-
-// export function getMarketData(symbol, days) {
-//     const apiKey = "UATD58NS66E6ZBZS";
-//     return fetch(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${symbol}&apikey=${apiKey}`)
-//         .then(response => response.json())
-//         .then(data => {
-//             const timeSeries = data['Time Series (Daily)'];
-//             const dates = Object.keys(timeSeries).slice(0, days);
-//             const prices = dates.map(date => parseFloat(timeSeries[date]['4. close']));
-
-//             return {
-//                 dates: dates,
-//                 prices: prices
-//             };
-//         })
-//         .catch(error => console.error(error));
-// }
-
+**/
 
 export async function getMarketData(days) {
     const cachedData = localStorage.getItem('data');

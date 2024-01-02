@@ -1,4 +1,4 @@
-import { createRect, valueInThousands, tickValues } from '../helpers/helper.js';
+import { createRect, valueInThousands, tickValues, buildCircle } from '../helpers/helper.js';
 import { generateDummyProjectionsData } from '../helpers/dummyData.js';
 /**
  * Se encarga de construir el gráfico de proyección.
@@ -19,6 +19,7 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
     drawOuterLines(group, xPosition, yPosition, height, width);
     
     const today = new Date();
+    // dummy data
     const generateProjections = generateDummyProjectionsData(today, '2033-01-01', lastData.close);
     const projectionData = generateProjections.map(p => ({
       startDate: new Date(p.start_date),
@@ -26,6 +27,7 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
       minValue: p.min_value,
       maxValue: p.max_value
     }));
+    // dummy data
 
     const xDomain = [today, d3.utcYear.offset(today, 10)];
     const yDomain = [0, highestValue];
@@ -82,6 +84,8 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
         .call(g => g.selectAll('.tick line')
             .attr('stroke', '#ECECEC')
             .attr('x2', width));
+
+        buildCircle(group, xPosition, yPosition, xScale, yScale, lastData, true);
     }else{
        const defs = group.append("defs");
        const pattern = defs.append("pattern")
@@ -108,6 +112,9 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
            .attr("stroke", "url(#splitPattern)")
            .attr("stroke-width", 2);
     }
+
+    populateChart(group, xPosition, yPosition, xScale, yScale, projectionData, lastData);
+
 
     return;
 };
@@ -184,13 +191,65 @@ const drawOuterLines = (group, xPosition, yPosition, height, width) => {
             .attr('y2', yPosition + 3 - offsetY / 2); // Punto final en Y
     }
             
-    };
+};
 
+const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionData, lastData) => {
+    const defs = group.append('defs');
 
+    projectionData.forEach((p, i) => {
+        const xStart = xScale(p.startDate) + xPosition;
+        const xEnd = xScale(p.endDate) + xPosition;
+        const yMax = yScale(p.maxValue) + yPosition;
+        const yMin = yScale(p.minValue) + yPosition;
+        const yLastDatum = yScale(lastData.close) + yPosition;
 
+        // Crear un id único para cada gradiente
+        const gradientId = `gradient-${i}`;
+        
+        const offset = ((yLastDatum - yMax) / (yMin - yMax)) * 100;
 
+        const gradient = defs.append('linearGradient')
+            .attr('id', gradientId)
+            .attr('x1', '0%')
+            .attr('x2', '0%')
+            .attr('y1', '0%')
+            .attr('y2', '100%');
 
+        gradient.append('stop')
+            .attr('offset', `${Math.max(0, offset - 0.1)}%`)
+            .attr('stop-color', '#24C6C8');
 
+        gradient.append('stop')
+            .attr('offset', `${offset}%`)
+            .attr('stop-color', '#24C6C8');
+        gradient.append('stop')
+            .attr('offset', `${offset}%`)
+            .attr('stop-color', '#ED5666');
+
+        gradient.append('stop')
+            .attr('offset', `${Math.min(100, offset + 0.1)}%`)
+            .attr('stop-color', '#ED5666');
+
+        const rectHeight = yMin - yMax;
+        const maxBorderRadius = 5;
+        const borderRadius = Math.min(maxBorderRadius, rectHeight / 2)
+
+        const rect = group.append('rect')
+        .attr('x', xStart)
+        .attr('width', xEnd - xStart)
+        .attr('y', yMin)
+        .attr('height', 0)
+        .attr('fill', `url(#${gradientId})`)
+        .attr('rx', borderRadius)
+        .attr('ry', borderRadius);
+
+        rect.transition()
+            .duration(1000)
+            .delay(i * 50)
+            .attr('y', yMax)
+            .attr('height', rectHeight);
+    });
+}
 
     // const parseDate = d3.timeParse("%Y-%m-%d");
     // const today = new Date();
