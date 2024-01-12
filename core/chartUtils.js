@@ -9,7 +9,7 @@ import { buildProjectionChart } from './projection.js';
  * @param margin: Margen del gráfico.
  * @param context: Contexto en el que se dibujará el gráfico.
  */
-export const buildChart = async (container, width, height, margin, context, data) => {
+export const buildChart = async (container, width, height, margin, context, data, timeframe) => {
     const svg = d3.select(container).append('svg')
         .attr('width', width)
         .attr('height', height);
@@ -20,23 +20,27 @@ export const buildChart = async (container, width, height, margin, context, data
     const historicalGroupSvg = svg.append('g');
 
     const lastData = data[data.length - 1];
-    const highestValue = d3.max(data, d => d.close * 1.3)
+
+    let highestValue = d3.max(data, d => d.close * 1.3);
+    highestValue = highestValue > lastData.close * 3 ? highestValue : lastData.close * 3;   
 
     const grouphWidthAlone = width - margin.left - margin.right;
     const grouphHeightStandard = height - margin.top - margin.bottom;
 
     buildButtons(grouphWidthAlone, margin.left, margin.right, context);
 
+    const hasOverflow = (context === 1 || context === 2) && timeframe === 3650; 
+
     switch (context) {
         case 0:
             buildHistoricalChart(historicalGroupSvg, grouphWidthAlone, grouphHeightStandard, margin.left, margin.top, true, data, lastData, highestValue);
             break;
         case 1:
-            buildProjectionChart(projectionGroupSvg, halfWidth - margin.right, grouphHeightStandard, halfWidth, margin.top, false, [], lastData, highestValue);
-            buildHistoricalChart(historicalGroupSvg, halfWidth - margin.left, grouphHeightStandard, margin.left, margin.top, false, data, lastData, highestValue);
+            buildProjectionChart(projectionGroupSvg, halfWidth - margin.right, grouphHeightStandard, halfWidth, margin.top, false, [], lastData, highestValue, hasOverflow);
+            buildHistoricalChart(historicalGroupSvg, halfWidth - margin.left, grouphHeightStandard, margin.left, margin.top, false, data, lastData, highestValue, hasOverflow);
             break;
         case 2:
-            buildProjectionChart(projectionGroupSvg, grouphWidthAlone, grouphHeightStandard, margin.left, margin.top, true, [], lastData, highestValue);
+            buildProjectionChart(projectionGroupSvg, grouphWidthAlone, grouphHeightStandard, margin.left, margin.top, true, [], lastData, highestValue, hasOverflow);
             break;
     }
 };
@@ -71,7 +75,7 @@ export const buildButtons = (width, marginLeft, marginRight, context) => {
  * @param context: Contexto en el que se dibujará el gráfico.
  */
 
-export async function updateChart(container, width, height, margin, context, data) {
+export async function updateChart(container, width, height, margin, context, data, timeframe) {
     d3.select(container).selectAll('svg').remove();
-    await buildChart(container, width, height, margin, context, data);
+    await buildChart(container, width, height, margin, context, data, timeframe);
 }
