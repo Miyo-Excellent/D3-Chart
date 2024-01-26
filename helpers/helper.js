@@ -73,3 +73,53 @@ export const buildCircle = (group, xPosition, yPosition, xScale, yScale, lastDat
       .delay(1000)
       .attr('r', innerCircleRadius);
 }
+
+export function calculateXTicks(start, end, numTicks) {
+  var interval = (end - start) / (numTicks - 1);
+  var ticks = [start];
+  for (var i = 1; i < numTicks - 1; i++) {
+      ticks.push(new Date(start.getTime() + (interval * i)));
+  }
+  ticks.push(end);
+  return ticks;
+}
+
+export function getTickFormat(timeframe) {
+
+  const spanishLocale = d3.timeFormatLocale({
+      "decimal": ",",
+      "thousands": ".",
+      "grouping": [3],
+      "currency": ["$", ""],
+      "dateTime": "%A, %e de %B de %Y %X",
+      "date": "%d/%m/%Y",
+      "time": "%H:%M:%S",
+      "periods": ["AM", "PM"],
+      "days": ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+      "shortDays": ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
+      "months": ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
+      "shortMonths": ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
+  });
+
+
+  const formatDayMonth = spanishLocale.format("%d-%b");
+  const formatMonthYear = spanishLocale.format("%b-%Y");
+  const formatYear = spanishLocale.format("%Y");
+  const formatWeek = spanishLocale.format("%a-%d");
+  const formatDayTime = spanishLocale.format("%H:%M-%d");
+
+  switch (timeframe) {
+      case 2:
+          return (d) => formatDayTime(d);
+      case 7:
+          return (d) => formatWeek(d);
+      case 31:
+          return (d) => formatDayMonth(d);
+      case 1825:
+          return (d) => formatMonthYear(d);
+      case 3650:
+          return (d) => formatYear(d);
+      default:
+          return spanishLocale.format("%Y-%m-%d");
+  }
+}

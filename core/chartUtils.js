@@ -31,16 +31,18 @@ export const buildChart = async (container, width, height, margin, context, data
 
     const hasOverflow = (context === 1 || context === 2) && timeframe === 3650; 
 
+    const years = timeframe / 365;
+
     switch (context) {
         case 0:
-            buildHistoricalChart(historicalGroupSvg, grouphWidthAlone, grouphHeightStandard, margin.left, margin.top, true, data, lastData, highestValue);
+            buildHistoricalChart(historicalGroupSvg, grouphWidthAlone, grouphHeightStandard, margin.left, margin.top, true, data, lastData, highestValue, timeframe);
             break;
         case 1:
-            buildProjectionChart(projectionGroupSvg, halfWidth - margin.right, grouphHeightStandard, halfWidth, margin.top, false, [], lastData, highestValue, hasOverflow);
-            buildHistoricalChart(historicalGroupSvg, halfWidth - margin.left, grouphHeightStandard, margin.left, margin.top, false, data, lastData, highestValue, hasOverflow);
+            buildProjectionChart(projectionGroupSvg, halfWidth - margin.right, grouphHeightStandard, halfWidth, margin.top, false, [], lastData, highestValue, hasOverflow, years, timeframe);
+            buildHistoricalChart(historicalGroupSvg, halfWidth - margin.left, grouphHeightStandard, margin.left, margin.top, false, data, lastData, highestValue, hasOverflow, timeframe);
             break;
         case 2:
-            buildProjectionChart(projectionGroupSvg, grouphWidthAlone, grouphHeightStandard, margin.left, margin.top, true, [], lastData, highestValue, hasOverflow);
+            buildProjectionChart(projectionGroupSvg, grouphWidthAlone, grouphHeightStandard, margin.left, margin.top, true, [], lastData, highestValue, hasOverflow, years, timeframe);
             break;
     }
 };

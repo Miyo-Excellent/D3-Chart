@@ -1,4 +1,4 @@
-import { createRect, valueInThousands, tickValues, buildCircle } from '../helpers/helper.js';
+import { createRect, valueInThousands, tickValues, buildCircle, calculateXTicks, getTickFormat } from '../helpers/helper.js';
 import { generateDummyProjectionsData } from '../helpers/dummyData.js';
 /**
  * Se encarga de construir el gráfico de proyección.
@@ -14,55 +14,54 @@ import { generateDummyProjectionsData } from '../helpers/dummyData.js';
  * @returns {Promise<void>}
  */
 
-export const buildProjectionChart = (group, width, height, xPosition, yPosition, only, data, lastData, highestValue, hasOverflow) => {
+export const buildProjectionChart = (group, width, height, xPosition, yPosition, only, data, lastData, highestValue, hasOverflow, years, timeframe) => {
     const overflowWidth = hasOverflow ? 35 : 0;
     const adjustedWidth = width - overflowWidth;
-    const overflowHeight = hasOverflow ? 35 : 0; // Altura del desbordamiento
+    const overflowHeight = 35; // Altura del desbordamiento
     const adjustedHeight = height - overflowHeight; // Altura ajustada para el gráfico
 
     // Si hay desbordamiento, dibujar el área de desbordamiento primero
-    if (hasOverflow) {
-        const defs = group.append("defs");
-        const pattern = defs.append("pattern")
-            .attr("id", "diagonalStripes")
-            .attr("width", 30)
-            .attr("height", 30)
-            .attr("patternUnits", "userSpaceOnUse")
-            .attr("patternTransform", "rotate(45)");
+    const defs = group.append("defs");
+    const pattern = defs.append("pattern")
+        .attr("id", "diagonalStripes")
+        .attr("width", 30)
+        .attr("height", 30)
+        .attr("patternUnits", "userSpaceOnUse")
+        .attr("patternTransform", "rotate(45)");
 
-        pattern.append("rect")
-            .attr("width", 15)
-            .attr("height", 30)
-            .attr("fill", "#FFFFFF");
+    pattern.append("rect")
+        .attr("width", 15)
+        .attr("height", 30)
+        .attr("fill", "#FFFFFF");
 
-        pattern.append("rect")
-            .attr("width", 15)
-            .attr("height", 30)
-            .attr("transform", "translate(15,0)")
-            .attr("fill", "#ECECEC");
+    pattern.append("rect")
+        .attr("width", 15)
+        .attr("height", 30)
+        .attr("transform", "translate(15,0)")
+        .attr("fill", "#ECECEC");
 
-        // Aplicar el patrón al área de desbordamiento en la parte superior
-        group.append('rect')
-            .attr('x', xPosition)
-            .attr('y', yPosition)
-            .attr('width', width)
-            .attr('height', overflowHeight)
-            .attr('fill', "url(#diagonalStripes)");
+    // Aplicar el patrón al área de desbordamiento en la parte superior
+    group.append('rect')
+        .attr('x', xPosition)
+        .attr('y', yPosition)
+        .attr('width', width)
+        .attr('height', overflowHeight)
+        .attr('fill', "url(#diagonalStripes)");
 
-        // Ajustar la posición y para el resto del gráfico
-        yPosition += overflowHeight;
-    }
+    // Ajustar la posición y para el resto del gráfico
+    yPosition += overflowHeight;
 
     // Crear el fondo del gráfico en la posición ajustada
     createRect(group, xPosition, yPosition, width, adjustedHeight, '#FFFFFF');
     drawOuterLines(group, xPosition, yPosition, adjustedHeight, adjustedWidth, hasOverflow);
-    if (hasOverflow) {
-        drawOverflowRect(group, xPosition + adjustedWidth, yPosition, adjustedHeight, overflowHeight);
-    }
+
+    drawOverflowRect(group, xPosition + adjustedWidth, yPosition, adjustedHeight, overflowHeight, hasOverflow);
 
     const today = new Date();
+    const todayTo = d3.utcDay.offset(today, timeframe);
+
     // dummy data
-    const generateProjections = generateDummyProjectionsData(today, '2033-01-01', lastData.close);
+    const generateProjections = generateDummyProjectionsData(today, todayTo, lastData.close);
     const projectionData = generateProjections.map(p => ({
         startDate: new Date(p.start_date),
         endDate: new Date(p.end_date),
@@ -71,17 +70,24 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
     }));
     // dummy data
 
-    const xDomain = [today, d3.utcYear.offset(today, 10)];
+    const xDomain = [today, d3.utcDay.offset(today, timeframe)];
     const yDomain = [0, highestValue];
 
     const xScale = d3.scaleUtc().domain(xDomain).range([0, adjustedWidth]);
     const yScale = d3.scaleLinear().domain(yDomain).range([adjustedHeight, 0]);
 
+    const start = xDomain[0];
+    const end = xDomain[1];
+    const xTicks = calculateXTicks(start, end, 10);
+
     const ticks = tickValues(highestValue, 9, 10);
 
     group.append('g')
         .attr('transform', `translate(${xPosition},${yPosition + adjustedHeight})`)
-        .call(d3.axisBottom(xScale).tickSize(0))
+        .call(d3.axisBottom(xScale)
+            .tickValues(xTicks)
+            .tickFormat(getTickFormat(timeframe))
+            .tickSize(0))
         .call(g => g.select('.domain').remove())
         .call(g => g.selectAll('.tick text')
             .attr('dy', '2.2em')
@@ -153,7 +159,7 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
             .attr("stroke-width", 2);
     }
 
-    populateChart(group, xPosition, yPosition, xScale, yScale, projectionData, lastData);
+    populateChart(group, xPosition, yPosition, xScale, yScale, projectionData, lastData, highestValue, start, end);
 
     if (hasOverflow) {
         // Define the pattern
@@ -272,13 +278,17 @@ const drawOuterLines = (group, xPosition, yPosition, height, width, hasOverflow)
 
 };
 
-const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionData, lastData) => {
+const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionData, lastData, highestValue, start, end) => {
     const defs = group.append('defs');
 
     projectionData.forEach((p, i) => {
+        if (p.minValue > highestValue || p.startDate < start) {
+            return;
+        }
+
         const xStart = xScale(p.startDate) + xPosition;
-        const xEnd = xScale(p.endDate) + xPosition;
-        const yMax = yScale(p.maxValue) + yPosition;
+        const xEnd = xScale(p.endDate > end ? end : p.endDate) + xPosition;
+        const yMax = yScale(p.maxValue > highestValue ? highestValue : p.maxValue) + yPosition;
         const yMin = yScale(p.minValue) + yPosition;
         const yLastDatum = yScale(lastData.close) + yPosition;
 
@@ -330,42 +340,44 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
     });
 };
 
-const drawOverflowRect = (group, xPosition, yPosition, height, width) => {
+const drawOverflowRect = (group, xPosition, yPosition, height, width, hasOverflow) => {
     // Dibuja la línea horizontal y la línea inclinada al final de la animación
-    const horizontalLine = group.append('line')
-        .attr('x1', xPosition)
-        .attr('y1', yPosition + height + 12)
-        .attr('x2', xPosition) // comienza en la posición X inicial
-        .attr('y2', yPosition + height + 12)
-        .attr('stroke', '#BDC2C7')
-        .attr('stroke-width', 1.5);
-
-    // Anima la línea horizontal desde la posición inicial hasta el ancho especificado
-    horizontalLine.transition()
-        .duration(1500)
-        .attr('x2', xPosition + width) // termina en la posición X final
-        .on('end', drawInclinedLine); // al final de la animación, dibuja la línea inclinada
-
-    function drawInclinedLine() {
-        const inclineLength = 12;
-        const angle = 65;
-        const angleRadians = (angle * Math.PI) / 180;
-        const halfIncline = inclineLength / 2;
-        const offsetX = Math.cos(angleRadians) * halfIncline;
-        const offsetY = Math.sin(angleRadians) * halfIncline;
-
-        // Dibuja la línea inclinada al comienzo de la línea horizontal
-        group.append('line')
-            .attr('x1', xPosition + offsetX)
-            .attr('y1', yPosition + height + 12 - offsetY)
-            .attr('x2', xPosition + offsetX) // comienza donde termina la línea horizontal
-            .attr('y2', yPosition + height + 12 - offsetY)
+    if (hasOverflow) {
+        const horizontalLine = group.append('line')
+            .attr('x1', xPosition)
+            .attr('y1', yPosition + height + 12)
+            .attr('x2', xPosition) // comienza en la posición X inicial
+            .attr('y2', yPosition + height + 12)
             .attr('stroke', '#BDC2C7')
-            .attr('stroke-width', 1.5)
-            .transition()
-            .duration(500)
-            .attr('x2', xPosition - offsetX) // termina desplazándose hacia la izquierda
-            .attr('y2', yPosition + height + 12 + offsetY); // y hacia abajo debido al ángulo negativo
+            .attr('stroke-width', 1.5);
+
+        // Anima la línea horizontal desde la posición inicial hasta el ancho especificado
+        horizontalLine.transition()
+            .duration(1500)
+            .attr('x2', xPosition + width) // termina en la posición X final
+            .on('end', drawInclinedLine); // al final de la animación, dibuja la línea inclinada
+
+        function drawInclinedLine() {
+            const inclineLength = 12;
+            const angle = 65;
+            const angleRadians = (angle * Math.PI) / 180;
+            const halfIncline = inclineLength / 2;
+            const offsetX = Math.cos(angleRadians) * halfIncline;
+            const offsetY = Math.sin(angleRadians) * halfIncline;
+
+            // Dibuja la línea inclinada al comienzo de la línea horizontal
+            group.append('line')
+                .attr('x1', xPosition + offsetX)
+                .attr('y1', yPosition + height + 12 - offsetY)
+                .attr('x2', xPosition + offsetX) // comienza donde termina la línea horizontal
+                .attr('y2', yPosition + height + 12 - offsetY)
+                .attr('stroke', '#BDC2C7')
+                .attr('stroke-width', 1.5)
+                .transition()
+                .duration(500)
+                .attr('x2', xPosition - offsetX) // termina desplazándose hacia la izquierda
+                .attr('y2', yPosition + height + 12 + offsetY); // y hacia abajo debido al ángulo negativo
+        }
     }
 
 
@@ -385,30 +397,28 @@ const drawOverflowRect = (group, xPosition, yPosition, height, width) => {
         .attr('y2', yPosition) // Punto final en Y
         .on('end', () => drawInclinedLineY(group, xPositionAdjusted + width + 5, yPosition));
 
-        function drawInclinedLineY() {
-            const inclineLength = 10;
-            const angle = 2;
-            const angleRadians = (angle * Math.PI) / 180;
-        
-            const offsetX = Math.cos(angleRadians) * inclineLength;
-            const offsetY = Math.sin(angleRadians) * inclineLength;
-        
-            // Define el punto de inicio de la línea en su posición final
-            const inclinedLine = group.append('line')
-                .attr('x1', xPositionAdjusted + width + 5 - offsetX / 2)
-                .attr('y1', yPosition - 1 + offsetY / 2)
-                .attr('x2', xPositionAdjusted + width + 5 - offsetX / 2) // Punto inicial en X igual a x1
-                .attr('y2', yPosition - 1 + offsetY / 2) // Punto inicial en Y igual a y1
-                .attr('stroke', '#BDC2C7')
-                .attr('stroke-width', 1.5);
-        
-            // Anima la línea hacia atrás hasta alcanzar la longitud y orientación deseadas
-            inclinedLine.transition()
-                .duration(500)
-                .attr('x2', xPositionAdjusted + width + 5 + offsetX / 2) // Punto final en X
-                .attr('y2', yPosition + 2 - offsetY / 2); // Punto final en Y
-        }
-        
+    function drawInclinedLineY() {
+        const inclineLength = 10;
+        const angle = 2;
+        const angleRadians = (angle * Math.PI) / 180;
 
+        const offsetX = Math.cos(angleRadians) * inclineLength;
+        const offsetY = Math.sin(angleRadians) * inclineLength;
+
+        // Define el punto de inicio de la línea en su posición final
+        const inclinedLine = group.append('line')
+            .attr('x1', xPositionAdjusted + width + 5 - offsetX / 2)
+            .attr('y1', yPosition - 1 + offsetY / 2)
+            .attr('x2', xPositionAdjusted + width + 5 - offsetX / 2) // Punto inicial en X igual a x1
+            .attr('y2', yPosition - 1 + offsetY / 2) // Punto inicial en Y igual a y1
+            .attr('stroke', '#BDC2C7')
+            .attr('stroke-width', 1.5);
+
+        // Anima la línea hacia atrás hasta alcanzar la longitud y orientación deseadas
+        inclinedLine.transition()
+            .duration(500)
+            .attr('x2', xPositionAdjusted + width + 5 + offsetX / 2) // Punto final en X
+            .attr('y2', yPosition + 2 - offsetY / 2); // Punto final en Y
+    }
 };
 
