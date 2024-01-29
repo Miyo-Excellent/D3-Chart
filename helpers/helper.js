@@ -74,15 +74,21 @@ export const buildCircle = (group, xPosition, yPosition, xScale, yScale, lastDat
       .attr('r', innerCircleRadius);
 }
 
-export function calculateXTicks(start, end, numTicks) {
+export function calculateXTicks(start, end, numTicks, omitFirstTick = false) {
   var interval = (end - start) / (numTicks - 1);
-  var ticks = [start];
-  for (var i = 1; i < numTicks - 1; i++) {
+  var ticks = [];
+
+  for (var i = omitFirstTick ? 1 : 0; i < numTicks; i++) {
       ticks.push(new Date(start.getTime() + (interval * i)));
   }
-  ticks.push(end);
+
+  if (!omitFirstTick) {
+      ticks.push(end);
+  }
+
   return ticks;
 }
+
 
 export function getTickFormat(timeframe) {
 
@@ -109,6 +115,8 @@ export function getTickFormat(timeframe) {
   const formatDayTime = spanishLocale.format("%H:%M-%d");
 
   switch (timeframe) {
+      case 0:
+          return (d) => formatMonthYear(d);
       case 2:
           return (d) => formatDayTime(d);
       case 7:
