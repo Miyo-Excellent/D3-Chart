@@ -33,6 +33,7 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
     createRect(group, xPosition, yPosition, width, adjustedHeight, '#293C4B');
 
     const xDomain = d3.extent(data, d => d.date);
+
     const yDomain = [0, highestValue];
 
     const xScale = d3.scaleUtc().domain(xDomain).range([0, width]);
@@ -40,8 +41,8 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
 
     const start = xDomain[0];
     const end = xDomain[1];
-    const xTicks = calculateXTicks(start, end, 10);
 
+    const xTicks = calculateXTicks(start, end, 10);
     const ticks = tickValues(highestValue, 9, 10);
 
     // x axis
