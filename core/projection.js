@@ -87,7 +87,6 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
 
     const ticks = tickValues(highestValue, 9, 10);
 
-    console.log('ticks', ticks);
 
     group.append('g')
         .attr('transform', `translate(${xPosition},${yPosition + adjustedHeight})`)
