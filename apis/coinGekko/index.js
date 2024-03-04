@@ -7,12 +7,12 @@
 **/
 
 export async function getMarketData(days) {
-    console.log('Fetching market data', days);
+    // console.log('Fetching market data', days);
     const cachedData = localStorage.getItem('data');
     let isYtd = days === 0;
 
     if (cachedData) {
-        console.log('Data from cache');
+        // console.log('Data from cache');
         const parsedData = JSON.parse(cachedData);
         let { dates, prices } = parsedData;
 
