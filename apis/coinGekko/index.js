@@ -7,52 +7,23 @@
 **/
 
 export async function getMarketData(days) {
-    // console.log('Fetching market data', days);
     const cachedData = localStorage.getItem('data');
-    let isYtd = days === 0;
 
     if (cachedData) {
-        // console.log('Data from cache');
         const parsedData = JSON.parse(cachedData);
-        let { dates, prices } = parsedData;
-
-        const currentYear = new Date().getFullYear();
-        const startOfLastYear = `${currentYear - 1}-01-01`;
-        const endOfLastYear = `${currentYear - 1}-12-31`;
-
-        if (isYtd) {
-            const startIndex = dates.findIndex(date => date >= startOfLastYear);
-            const endIndex = dates.findIndex(date => date > endOfLastYear) > -1 ? dates.findIndex(date => date > endOfLastYear) : dates.length;
-
-            return {
-                dates: dates.slice(startIndex, endIndex),
-                prices: prices.slice(startIndex, endIndex)
-            };
-        } else {
-            // Caso no YTD: devolver los días solicitados
-            const todayStr = new Date().toISOString().slice(0, 10);
-            const latestDateInCache = dates[dates.length - 1];
-            if (latestDateInCache >= todayStr) {
-                const startIndex = Math.max(dates.length - days, 0);
-                return {
-                    dates: dates.slice(startIndex),
-                    prices: prices.slice(startIndex)
-                };
-            } else {
-                // Los datos necesitan ser actualizados
-                return await fetchAndSaveMarketData(days, isYtd);
-            }
-        }
+        return filterDataByDate(parsedData.dates, parsedData.prices, days);
     } else {
-        // No hay datos en caché, obtenemos nuevos datos
-        return await fetchAndSaveMarketData(days, isYtd);
+        let freshData = await fetchAndSaveMarketData(days);
+        if (freshData) {
+            return filterDataByDate(freshData.dates, freshData.prices, days);
+        } else {
+            return null;
+        }
     }
 }
 
-
-
-async function fetchAndSaveMarketData(days, isYtd) {
-    let queryDays = isYtd ? '365' : days; // Si es YTD, obtenemos datos del último año
+async function fetchAndSaveMarketData(days) {
+    let queryDays = days == 0 ? '700' : days;
 
     try {
         const response = await fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=${queryDays}`);
@@ -65,8 +36,6 @@ async function fetchAndSaveMarketData(days, isYtd) {
 
         let prices = data.prices.map(price => price[1]);
 
-        // Ajusta aquí si necesitas manejar la lógica de YTD de manera diferente
-
         const filledData = fillMissingDates(dates, prices);
         localStorage.setItem('data', JSON.stringify(filledData));
         return filledData;
@@ -75,6 +44,20 @@ async function fetchAndSaveMarketData(days, isYtd) {
         return null;
     }
 }
+
+const filterDataByDate = (dates, prices, days) => {
+    const { start, end } = getStartDateFromDays(days);
+    const startDateStr = start.toISOString().slice(0, 10);
+    const endDateStr = end ? end.toISOString().slice(0, 10) : start.toISOString().slice(0, 10); // Si no hay 'end', usar 'start'
+
+    const startIndex = dates.findIndex(date => date >= startDateStr);
+    const endIndex = end ? dates.findIndex(date => date > endDateStr) : dates.length;
+
+    return {
+        dates: dates.slice(startIndex, endIndex),
+        prices: prices.slice(startIndex, endIndex)
+    };
+};
 
 
 const fillMissingDates = (dates, prices) => {
@@ -92,14 +75,36 @@ const fillMissingDates = (dates, prices) => {
         while (dayDifference > 1) {
             currentDate.setDate(currentDate.getDate() + 1);
             filledDates.push(currentDate.toISOString().slice(0, 10));
-            filledPrices.push(prices[i]); // Repetimos el último precio conocido
+            filledPrices.push(prices[i]);
             dayDifference--;
         }
     }
 
-    // Añadimos el último día
     filledDates.push(dates[dates.length - 1]);
     filledPrices.push(prices[prices.length - 1]);
 
     return { dates: filledDates, prices: filledPrices };
 };
+
+const getStartDateFromDays = (days) => {
+    const today = new Date();
+    switch (days) {
+        case 0: // YTD custom, el año completo anterior
+            return {
+                start: new Date(`${today.getFullYear() - 1}-01-01`),
+                end: new Date(`${today.getFullYear() - 1}-12-31`)
+            };
+        case 2: // Día anterior
+            return { start: new Date(today.setDate(today.getDate() - 1)), end: null };
+        case 7: // Semana pasada
+            return { start: new Date(today.setDate(today.getDate() - 7)), end: null };
+        case 31: // Mes anterior
+            return { start: new Date(today.setMonth(today.getMonth() - 1)), end: null };
+        case 1825: // 5 años
+            return { start: new Date(today.setFullYear(today.getFullYear() - 5)), end: null };
+        case 3650: // 10 años
+            return { start: new Date(today.setFullYear(today.getFullYear() - 10)), end: null };
+        default:
+            return { start: null, end: null };
+    }
+}

@@ -83,10 +83,37 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
     const end = xDomain[1];
 
     const shouldOmitFirstTick = !only && [0, 2, 7, 31].includes(timeframe);
-    const xTicks = calculateXTicks(today, end, 10, shouldOmitFirstTick);
 
-    const ticks = tickValues(highestValue, 9, 10);
+    let tickCount = 10;
 
+    switch (timeframe) {
+        case 0:
+            tickCount = 12;
+            break;
+        case 2:
+            tickCount = 9;
+            break;
+        case 7:
+            tickCount = 8;
+            break;
+        case 31:
+            tickCount = 4;
+            break;
+        case 1825:
+            tickCount = 6;
+            break;
+        case 3650:
+            tickCount = 10;
+            break;
+        default:
+            tickCount = 10;
+            break;
+    }
+
+
+    const xTicks = calculateXTicks(today, end, tickCount, shouldOmitFirstTick);
+
+    const yTicks = tickValues(highestValue, 9, 10);
 
     group.append('g')
         .attr('transform', `translate(${xPosition},${yPosition + adjustedHeight})`)
@@ -106,7 +133,7 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
 
     group.append('g')
         .attr('transform', `translate(${xPosition + adjustedWidth},${yPosition})`)
-        .call(d3.axisRight(yScale).tickSize(0).tickFormat(valueInThousands).tickValues(ticks))
+        .call(d3.axisRight(yScale).tickSize(0).tickFormat(valueInThousands).tickValues(yTicks))
         .call(g => g.select('.domain').remove())
         .call(g => g.selectAll('.tick text')
             .attr('dx', hasOverflow ? '4.5em' : '1.5em')
@@ -137,7 +164,7 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
     if (only === true) {
         group.append('g')
             .attr('transform', `translate(${xPosition},${yPosition})`)
-            .call(d3.axisLeft(yScale).tickSize(0).tickFormat(valueInThousands).tickValues(ticks))
+            .call(d3.axisLeft(yScale).tickSize(0).tickFormat(valueInThousands).tickValues(yTicks))
             .call(g => g.select('.domain').remove())
             .call(g => g.selectAll('.tick text')
                 .attr('dx', '-1.5em')
