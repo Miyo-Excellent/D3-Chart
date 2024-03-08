@@ -39,7 +39,7 @@ export const buildChart = async (container, width, height, margin, context, data
             break;
         case 1:
             buildProjectionChart(projectionGroupSvg, halfWidth - margin.right, grouphHeightStandard, halfWidth, margin.top, false, [], lastData, highestValue, hasOverflow, years, timeframe);
-            buildHistoricalChart(historicalGroupSvg, halfWidth - margin.left, grouphHeightStandard, margin.left, margin.top, false, data, lastData, highestValue, hasOverflow, timeframe);
+            buildHistoricalChart(historicalGroupSvg, halfWidth - margin.left, grouphHeightStandard, margin.left, margin.top, false, data, lastData, highestValue, timeframe);
             break;
         case 2:
             buildProjectionChart(projectionGroupSvg, grouphWidthAlone, grouphHeightStandard, margin.left, margin.top, true, [], lastData, highestValue, hasOverflow, years, timeframe);

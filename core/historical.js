@@ -15,7 +15,7 @@ import { createRect, valueInThousands, tickValues, buildCircle, calculateXTicks,
  */
 
 
-export const buildHistoricalChart = (group, width, height, xPosition, yPosition, only, data, lastData, highestValue, hasOverflow = false, timeframe) => {
+export const buildHistoricalChart = (group, width, height, xPosition, yPosition, only, data, lastData, highestValue, timeframe) => {
     const overflowHeight = 35; // Altura del desbordamiento
     const adjustedHeight = height - overflowHeight; // Altura ajustada para el gráfico
 
@@ -34,6 +34,8 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
 
     const xDomain = d3.extent(data, d => d.date);
 
+    console.log(xDomain);
+
     const yDomain = [0, highestValue];
 
     const xScale = d3.scaleUtc().domain(xDomain).range([0, width]);
@@ -42,8 +44,36 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
     const start = xDomain[0];
     const end = xDomain[1];
 
-    const xTicks = calculateXTicks(start, end, 10);
-    const ticks = tickValues(highestValue, 9, 10);
+    // deben ser x cantidad de ticks dependiendo del timeframe
+
+    let tickCount = 10;
+
+    switch (timeframe) {
+        case 0:
+            tickCount = 12;
+            break;
+        case 2:
+            tickCount = 9;
+            break;
+        case 7:
+            tickCount = 8;
+            break;
+        case 31:
+            tickCount = 4;
+            break;
+        case 1825:
+            tickCount = 6;
+            break;
+        case 3650:
+            tickCount = 10;
+            break;
+        default:
+            tickCount = 10;
+            break;
+    }
+
+    const xTicks = calculateXTicks(start, end, tickCount);
+    const yTicks = tickValues(highestValue, 9, 10);
 
     // x axis
     group.append('g')
@@ -65,7 +95,7 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
     // y axis left
     group.append('g')
         .attr('transform', `translate(${xPosition},${yPosition})`)
-        .call(d3.axisLeft(yScale).tickSize(0).tickFormat(valueInThousands).tickValues(ticks))
+        .call(d3.axisLeft(yScale).tickSize(0).tickFormat(valueInThousands).tickValues(yTicks))
         .call(g => g.select('.domain').remove())
         .call(g => g.selectAll('.tick text')
             .attr('dx', '-1.5em')
@@ -84,7 +114,7 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
         // y axis right
         group.append('g')
             .attr('transform', `translate(${xPosition + width},${yPosition})`)
-            .call(d3.axisRight(yScale).tickSize(0).tickFormat(valueInThousands).tickValues(ticks))
+            .call(d3.axisRight(yScale).tickSize(0).tickFormat(valueInThousands).tickValues(yTicks))
             .call(g => g.select('.domain').remove())
             .call(g => g.selectAll('.tick text')
                 .attr('dx', '1.5em')
@@ -122,7 +152,9 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
         .duration(2000)
         .attr('stroke-dashoffset', 0);
 
-    buildCircle(group, xPosition, yPosition, xScale, yScale, lastData);
+        if (timeframe != 0) {
+            buildCircle(group, xPosition, yPosition, xScale, yScale, lastData);
+        }
 
     return;
 };
