@@ -214,22 +214,48 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
         // Crear el grupo de desbordamiento lateral
         lateralOverflowGroup = group.append('g')
             .attr('transform', `translate(${xPosition + adjustedWidth},${yPosition})`);
-    
+
         // Aplicar el patrón al rectángulo de desbordamiento
         lateralOverflowGroup.append('rect')
             .attr('width', overflowWidth)
             .attr('height', adjustedHeight + 1)
             .attr('fill', "url(#diagonalStripes)");
-    
+
         // Calcula el centro del desbordamiento lateral
         xCenterLateralOverflow = overflowWidth / 2;
     }
-    
+
 
     populateChart(group, xPosition, yPosition, xScale, yScale, projectionData, lastData, highestValue, start, end, overflowGroup, yCenterOverflow, lateralOverflowGroup, xCenterLateralOverflow);
 
     if (only === true) {
         buildCircle(group, xPosition, yPosition, xScale, yScale, lastData, true);
+    }
+
+    if (timeframe === 0) {
+        const groupLine = d3.line()
+            .x(d => xScale(d.date) + xPosition)
+            .y(d => yScale(d.close) + yPosition);
+        const path = group.append('path')
+            .datum(data)
+            .attr('fill', 'none')
+            .attr('stroke', '#17A2B8')
+            .attr('stroke-width', 1.5)
+            .attr('d', groupLine);
+
+        const totalLength = path.node().getTotalLength();
+
+        // Line animation
+        path.attr('stroke-dasharray', totalLength + " " + totalLength)
+            .attr('stroke-dashoffset', totalLength)
+            .transition()
+            .delay(2000)
+            .duration(2000)
+            .attr('stroke-dashoffset', 0);
+
+        if (timeframe === 0) {
+            buildCircle(group, xPosition, yPosition, xScale, yScale, lastData, false, 3000);
+        }
     }
 
     return;

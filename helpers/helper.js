@@ -39,7 +39,7 @@ export const tickValues = (highestValue, tickCount, length) => {
     return Array.from({ length: length }, (_, i) => i * tickInterval);
 }
 
-export const buildCircle = (group, xPosition, yPosition, xScale, yScale, lastData, isProjection = false) => {
+export const buildCircle = (group, xPosition, yPosition, xScale, yScale, lastData, isProjection = false, delay = 1000) => {
 
     // Circle
     const outerRingRadius = 9;
@@ -58,6 +58,7 @@ export const buildCircle = (group, xPosition, yPosition, xScale, yScale, lastDat
 
     // Outer ring animation
     outerRing.transition()
+        .delay(delay != 1000 ? delay : 0)
         .duration(3000)
         .attr('r', outerRingRadius);
 
@@ -70,7 +71,7 @@ export const buildCircle = (group, xPosition, yPosition, xScale, yScale, lastDat
     // Inner circle animation
     innerCircle.transition()
         .duration(1000)
-        .delay(1000)
+        .delay(delay)
         .attr('r', innerCircleRadius);
 }
 

@@ -35,16 +35,17 @@ export const buildChart = async (container, width, height, margin, context, data
 
     let dataYear = [];
     let lastDataYear = {};
-
+    let currentYearData = [];
     if (timeframe === 0) {
         const today = new Date();
         const lastYear = today.getFullYear() - 1;
         const lastYearStart = new Date(`${lastYear}-01-01`);
         const lastYearEnd = new Date(`${lastYear}-12-31T23:59:59`);
         const lastYearData = data.filter(d => d.date >= lastYearStart && d.date <= lastYearEnd);
-        const currentYearData = data.filter(d => d.date > lastYearEnd);
+        currentYearData = data.filter(d => d.date > lastYearEnd);
         dataYear = lastYearData;
         lastDataYear = currentYearData[currentYearData.length - 1];
+        data = dataYear;
     }
 
     switch (context) {
@@ -52,11 +53,11 @@ export const buildChart = async (container, width, height, margin, context, data
             buildHistoricalChart(historicalGroupSvg, grouphWidthAlone, grouphHeightStandard, margin.left, margin.top, true, data, lastData, highestValue, timeframe);
             break;
         case 1:
-            buildProjectionChart(projectionGroupSvg, halfWidth - margin.right, grouphHeightStandard, halfWidth, margin.top, false, [], lastData, highestValue, hasOverflow, years, timeframe);
+            buildProjectionChart(projectionGroupSvg, halfWidth - margin.right, grouphHeightStandard, halfWidth, margin.top, false, currentYearData, lastData, highestValue, hasOverflow, years, timeframe);
             buildHistoricalChart(historicalGroupSvg, halfWidth - margin.left, grouphHeightStandard, margin.left, margin.top, false, data, lastData, highestValue, timeframe);
             break;
         case 2:
-            buildProjectionChart(projectionGroupSvg, grouphWidthAlone, grouphHeightStandard, margin.left, margin.top, true, [], lastData, highestValue, hasOverflow, years, timeframe);
+            buildProjectionChart(projectionGroupSvg, grouphWidthAlone, grouphHeightStandard, margin.left, margin.top, true, currentYearData, lastData, highestValue, hasOverflow, years, timeframe);
             break;
     }
 };
