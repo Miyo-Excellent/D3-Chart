@@ -33,6 +33,20 @@ export const buildChart = async (container, width, height, margin, context, data
 
     const years = timeframe / 365;
 
+    let dataYear = [];
+    let lastDataYear = {};
+
+    if (timeframe === 0) {
+        const today = new Date();
+        const lastYear = today.getFullYear() - 1;
+        const lastYearStart = new Date(`${lastYear}-01-01`);
+        const lastYearEnd = new Date(`${lastYear}-12-31T23:59:59`);
+        const lastYearData = data.filter(d => d.date >= lastYearStart && d.date <= lastYearEnd);
+        const currentYearData = data.filter(d => d.date > lastYearEnd);
+        dataYear = lastYearData;
+        lastDataYear = currentYearData[currentYearData.length - 1];
+    }
+
     switch (context) {
         case 0:
             buildHistoricalChart(historicalGroupSvg, grouphWidthAlone, grouphHeightStandard, margin.left, margin.top, true, data, lastData, highestValue, timeframe);

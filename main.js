@@ -42,11 +42,11 @@ const initApp = async () => {
   const updateChartBasedOnState = async () => {
     const { dates, prices } = await getMarketData(chartState.timeframe);
     const data = dates.map((date, index) => ({
-      // si luego los valores vienen con tiempo eliminar el + 'T00:00:00'
       date: new Date(date + 'T00:00:00'),
       close: prices[index]
     }));
 
+    // console.log('data', data);
 
     await updateChart('#chart-container', width, height, margin, chartState.context, data, chartState.timeframe);
   };

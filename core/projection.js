@@ -15,6 +15,10 @@ import { generateDummyProjectionsData } from '../helpers/dummyData.js';
  */
 
 export const buildProjectionChart = (group, width, height, xPosition, yPosition, only, data, lastData, highestValue, hasOverflow, years, timeframe) => {
+    // console.log({
+    //     'width': width,
+    //     'height': height,
+    // });
     const overflowWidth = hasOverflow ? 35 : 0;
     const adjustedWidth = width - overflowWidth;
     const overflowHeight = 35; // Altura del desbordamiento
@@ -59,7 +63,7 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
 
     // if time frame is 0 then today date will be first day of the year, present year
     const today = timeframe === 0 ? new Date(new Date().getFullYear(), 0, 1) : new Date();
-    const todayTo = timeframe === 0 ? new Date(new Date().getFullYear(), 11, 31) : d3.utcDay.offset(today, timeframe);
+    const todayTo = timeframe === 0 ? new Date(new Date().getFullYear(), 11, 31) : d3.utcDay.offset(today, timeframe == 2 ? 1 : timeframe);
 
     // dummy data
     const generateProjections = generateDummyProjectionsData(today, todayTo, lastData.close);
@@ -71,7 +75,6 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
         maxValue: p.max_value
     }));
 
-    // dummy data
 
     const xDomain = [today, todayTo];
     const yDomain = [0, highestValue];
@@ -112,7 +115,6 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
 
 
     const xTicks = calculateXTicks(today, end, tickCount, shouldOmitFirstTick);
-
     const yTicks = tickValues(highestValue, 9, 10);
 
     group.append('g')

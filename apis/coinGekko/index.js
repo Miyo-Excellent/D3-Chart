@@ -92,10 +92,13 @@ const getStartDateFromDays = (days) => {
         case 0: // YTD custom, el año completo anterior
             return {
                 start: new Date(`${today.getFullYear() - 1}-01-01`),
-                end: new Date(`${today.getFullYear() - 1}-12-31`)
+                end: null
             };
-        case 2: // Día anterior
-            return { start: new Date(today.setDate(today.getDate() - 1)), end: null };
+        case 2:
+            return {
+                start: new Date(today.setDate(today.getDate() - 1)),
+                end: null
+            };
         case 7: // Semana pasada
             return { start: new Date(today.setDate(today.getDate() - 7)), end: null };
         case 31: // Mes anterior

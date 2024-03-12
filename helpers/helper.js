@@ -89,7 +89,6 @@ export function calculateXTicks(start, end, numTicks, omitFirstTick = false) {
     return ticks;
 }
 
-
 export function getTickFormat(timeframe) {
 
     const spanishLocale = d3.timeFormatLocale({
@@ -109,7 +108,7 @@ export function getTickFormat(timeframe) {
 
 
     const formatDayMonth = spanishLocale.format("%d-%b");
-    const formatMonthYear = spanishLocale.format("%b-%Y");
+    const formatMonthYear = spanishLocale.format("%b-%y");
     const formatYear = spanishLocale.format("%Y");
     const formatWeek = spanishLocale.format("%a-%d");
     const formatDayTime = spanishLocale.format("%H:%M-%d");
@@ -124,7 +123,7 @@ export function getTickFormat(timeframe) {
         case 31:
             return (d) => formatDayMonth(d);
         case 1825:
-            return (d) => formatMonthYear(d);
+            return (d) => formatYear(d);
         case 3650:
             return (d) => formatYear(d);
         default:
