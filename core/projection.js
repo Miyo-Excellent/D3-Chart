@@ -24,6 +24,8 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
     const overflowHeight = 35; // Altura del desbordamiento
     const adjustedHeight = height - overflowHeight; // Altura ajustada para el gráfico
 
+    console.log('adjustedHeight', adjustedHeight);
+
     // Si hay desbordamiento, dibujar el área de desbordamiento primero
     const defs = group.append("defs");
     const pattern = defs.append("pattern")
@@ -58,7 +60,6 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
     // Crear el fondo del gráfico en la posición ajustada
     createRect(group, xPosition, yPosition, width, adjustedHeight, '#FFFFFF');
     drawOuterLines(group, xPosition, yPosition, adjustedHeight, adjustedWidth, hasOverflow);
-
     drawOverflowRect(group, xPosition + adjustedWidth, yPosition, adjustedHeight, overflowHeight, hasOverflow);
 
     // if time frame is 0 then today date will be first day of the year, present year
@@ -112,7 +113,6 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
             tickCount = 10;
             break;
     }
-
 
     const xTicks = calculateXTicks(today, end, tickCount, shouldOmitFirstTick);
     const yTicks = tickValues(highestValue, 9, 10);
@@ -209,6 +209,7 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
 
     let lateralOverflowGroup = null;
     let xCenterLateralOverflow = null;
+    let squareOverflowGroup = null;
 
     if (hasOverflow) {
         // Crear el grupo de desbordamiento lateral
@@ -223,12 +224,14 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
 
         // Calcula el centro del desbordamiento lateral
         xCenterLateralOverflow = overflowWidth / 2;
+
+        squareOverflowGroup = drawTopRightOverflowRect(group, xPosition, yPosition, overflowHeight, overflowWidth, width);
     }
 
 
-    populateChart(group, xPosition, yPosition, xScale, yScale, projectionData, lastData, highestValue, start, end, overflowGroup, yCenterOverflow, lateralOverflowGroup, xCenterLateralOverflow);
+    populateChart(group, xPosition, yPosition, xScale, yScale, projectionData, lastData, highestValue, start, end, overflowGroup, yCenterOverflow, lateralOverflowGroup, xCenterLateralOverflow, squareOverflowGroup);
 
-    if (only === true) {
+    if (only === true && timeframe !== 0) {
         buildCircle(group, xPosition, yPosition, xScale, yScale, lastData, true);
     }
 
@@ -335,11 +338,12 @@ const drawOuterLines = (group, xPosition, yPosition, height, width, hasOverflow)
 
 };
 
-const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionData, lastData, highestValue, start, end, overflowGroup, yCenterOverflow, lateralOverflowGroup, xCenterLateralOverflow) => {
+const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionData, lastData, highestValue, start, end, overflowGroup, yCenterOverflow, lateralOverflowGroup, xCenterLateralOverflow, squareOverflowGroup) => {
     const defs = group.append('defs');
 
     // Primero dibujamos todos los rangos
     projectionData.forEach((p, i) => {
+        // con esto eliminamos los valores que no son rangos, para iterar solo sobre los rangos
         if (p.startDate.getTime() === p.endDate.getTime() && p.minValue === p.maxValue) {
             return;
         }
@@ -416,25 +420,28 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
 
     // Luego dibujamos todos los puntos específicos
     projectionData.forEach((p, i) => {
+
+        // con esto eliminamos los valores que son rangos, para iterar solo sobre los puntos específicos
         if (p.startDate.getTime() !== p.endDate.getTime() || p.minValue !== p.maxValue) {
             return;
         }
 
-        if (p.minValue > highestValue || p.startDate < start) {
-            if (p.minValue > highestValue) {
-                overflowGroup.append('circle')
-                    .attr('cx', xScale(p.startDate))
-                    .attr('cy', yCenterOverflow)
-                    .attr('r', 5)
-                    .attr('fill', 'red');
-            }
-            return;
-        }
-
-        if (p.startDate > end && lateralOverflowGroup) {
+        if (p.minValue > highestValue && p.startDate > end && squareOverflowGroup) {
+            squareOverflowGroup.append('circle')
+                .attr('cx', xCenterLateralOverflow)
+                .attr('cy', yCenterOverflow)
+                .attr('r', 5)
+                .attr('fill', 'red');
+        } else if (p.minValue > highestValue || p.startDate < start) {
+            overflowGroup.append('circle')
+                .attr('cx', xScale(p.startDate))
+                .attr('cy', yCenterOverflow)
+                .attr('r', 5)
+                .attr('fill', 'red');
+        } else if (p.startDate > end && lateralOverflowGroup) {
             lateralOverflowGroup.append('circle')
                 .attr('cx', xCenterLateralOverflow)
-                .attr('cy', yScale(p.maxValue) + yPosition)
+                .attr('cy', yScale(p.maxValue))
                 .attr('r', 5)
                 .attr('fill', 'red');
         }
@@ -459,6 +466,12 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
 
 const drawOverflowRect = (group, xPosition, yPosition, height, width, hasOverflow) => {
     if (hasOverflow) {
+        console.log('has overflow', {
+            'xPosition': xPosition,
+            'yPosition': yPosition,
+            'height': height,
+            'width': width
+        });
         const horizontalLine = group.append('line')
             .attr('x1', xPosition)
             .attr('y1', yPosition + height + 12)
@@ -531,5 +544,18 @@ const drawOverflowRect = (group, xPosition, yPosition, height, width, hasOverflo
             .attr('x2', xPositionAdjusted + widthAdjusted + offsetX / 2)
             .attr('y2', yPosition + 2 - offsetY / 2);
     }
+};
+
+const drawTopRightOverflowRect = (group, xPosition, yPosition, overflowHeight, overflowWidth, width) => {
+    const topRightOverflowGroup = group.append('g')
+        .attr('transform', `translate(${xPosition + width - overflowWidth},${yPosition - overflowHeight})`);
+
+    // Aplicar el patrón al rectángulo de desbordamiento en la esquina superior derecha
+    topRightOverflowGroup.append('rect')
+        .attr('width', overflowWidth)
+        .attr('height', overflowHeight)
+        .attr('fill', "url(#diagonalStripes)");
+
+    return topRightOverflowGroup;
 };
 
