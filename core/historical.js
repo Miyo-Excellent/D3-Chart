@@ -16,10 +16,9 @@ import { createRect, valueInThousands, tickValues, buildCircle, calculateXTicks,
 
 
 export const buildHistoricalChart = (group, width, height, xPosition, yPosition, only, data, lastData, highestValue, timeframe) => {
-    const overflowHeight = 35; // Altura del desbordamiento
-    const adjustedHeight = height - overflowHeight; // Altura ajustada para el gráfico
+    const overflowHeight = 35;
+    const adjustedHeight = height - overflowHeight;
 
-    // Aplicar el patrón al área de desbordamiento en la parte superior
     group.append('rect')
         .attr('x', xPosition)
         .attr('y', yPosition)
@@ -27,7 +26,6 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
         .attr('height', overflowHeight)
         .attr('fill', "#293C4B");
 
-    // Ajustar la posición y para el resto del gráfico
     yPosition += overflowHeight;
 
     createRect(group, xPosition, yPosition, width, adjustedHeight, '#293C4B');
@@ -62,8 +60,6 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
         xDomain = d3.extent(data, d => d.date);
     }
 
-    // console.log(xDomain);
-
     const yDomain = [0, highestValue];
 
     const xScale = d3.scaleUtc().domain(xDomain).range([0, width]);
@@ -71,8 +67,6 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
 
     const start = xDomain[0];
     const end = xDomain[1];
-
-    // deben ser x cantidad de ticks dependiendo del timeframe
 
     let tickCount = 10;
 
@@ -103,7 +97,6 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
     const xTicks = calculateXTicks(start, end, tickCount);
     const yTicks = tickValues(highestValue, 9, 10);
 
-    // x axis
     group.append('g')
         .attr('transform', `translate(${xPosition},${yPosition + adjustedHeight})`)
         .call(d3.axisBottom(xScale)
@@ -120,7 +113,6 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
             .style('letter-spacing', '0.4285714030265808px')
             .style('fill', '#D6D9DC'));
 
-    // y axis left
     group.append('g')
         .attr('transform', `translate(${xPosition},${yPosition})`)
         .call(d3.axisLeft(yScale).tickSize(0).tickFormat(valueInThousands).tickValues(yTicks))
@@ -139,7 +131,6 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
             .attr('x2', width));
 
     if (only === true) {
-        // y axis right
         group.append('g')
             .attr('transform', `translate(${xPosition + width},${yPosition})`)
             .call(d3.axisRight(yScale).tickSize(0).tickFormat(valueInThousands).tickValues(yTicks))
@@ -158,8 +149,6 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
                 .attr('x2', -width));
     }
 
-
-    // line
     const groupLine = d3.line()
         .x(d => xScale(d.date) + xPosition)
         .y(d => yScale(d.close) + yPosition);
@@ -173,7 +162,6 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
 
     const totalLength = path.node().getTotalLength();
 
-    // Line animation
     path.attr('stroke-dasharray', totalLength + " " + totalLength)
         .attr('stroke-dashoffset', totalLength)
         .transition()

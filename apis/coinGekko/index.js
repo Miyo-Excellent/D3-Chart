@@ -1,54 +1,60 @@
 /**
- * @function getMarketData
- * @description Obtiene los precios de cierre y las fechas de los últimos días de una acción.
- * @param {string} symbol - El símbolo de la acción a consultar (ej: "MSFT", "AAPL", "GOOGL", etc.)
- * @param {int} days - El número de días a consultar (ej: 7, 30, 90, etc.)
- * @returns {object} - Un objeto con dos propiedades: "dates" y "prices", ambas son arrays.
-**/
-
-export async function getMarketData(days) {
-    const cachedData = localStorage.getItem('data');
+ * @async
+ * @function fetchMarketData
+ * @description Fetches closing prices and dates for a given symbol over a specified number of days.
+ * @param {number} days - The number of days to fetch data for.
+ * @returns {Promise<Object|null>} - An object containing 'dates' and 'prices' arrays, or null if an error occurs.
+ */
+export async function fetchMarketData(days) {
+    const cachedData = localStorage.getItem('marketData');
 
     if (cachedData) {
-        const parsedData = JSON.parse(cachedData);
-        return filterDataByDate(parsedData.dates, parsedData.prices, days);
+        const { dates, prices } = JSON.parse(cachedData);
+        return filterDataByTimeSpan(dates, prices, days);
     } else {
-        let freshData = await fetchAndSaveMarketData(days);
-        if (freshData) {
-            return filterDataByDate(freshData.dates, freshData.prices, days);
-        } else {
-            return null;
-        }
+        const freshData = await retrieveAndStoreMarketData(days);
+        return freshData ? filterDataByTimeSpan(freshData.dates, freshData.prices, days) : null;
     }
 }
 
-async function fetchAndSaveMarketData(days) {
-    let queryDays = days == 0 ? '700' : days;
+/**
+ * @async
+ * @function retrieveAndStoreMarketData
+ * @description Fetches market data for the past specified days and stores it in local storage.
+ * @param {number} days - The number of days to fetch data for.
+ * @returns {Promise<Object|null>} - The market data object or null if an error occurs.
+ */
+async function retrieveAndStoreMarketData(days) {
+    const period = days === 0 ? 'max' : days.toString();
 
     try {
-        const response = await fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=${queryDays}`);
-        const data = await response.json();
+        const response = await fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=${period}`);
+        const { prices } = await response.json();
 
-        let dates = data.prices.map(price => {
-            const date = new Date(price[0]);
-            return date.toISOString().slice(0, 10);
-        });
+        const dates = prices.map(item => (new Date(item[0])).toISOString().slice(0, 10));
+        const values = prices.map(item => item[1]);
 
-        let prices = data.prices.map(price => price[1]);
-
-        const filledData = fillMissingDates(dates, prices);
-        localStorage.setItem('data', JSON.stringify(filledData));
-        return filledData;
+        const structuredData = structureDatePriceData(dates, values);
+        localStorage.setItem('marketData', JSON.stringify(structuredData));
+        return structuredData;
     } catch (error) {
         console.error('Error fetching market data:', error);
         return null;
     }
 }
 
-const filterDataByDate = (dates, prices, days) => {
-    const { start, end } = getStartDateFromDays(days);
+/**
+ * @function filterDataByTimeSpan
+ * @description Filters market data based on a specified time span.
+ * @param {Array<string>} dates - The array of date strings.
+ * @param {Array<number>} prices - The array of prices.
+ * @param {number} days - The number of days for the time span.
+ * @returns {Object} - An object containing filtered 'dates' and 'prices'.
+ */
+const filterDataByTimeSpan = (dates, prices, days) => {
+    const { start, end } = calculateTimeSpan(days);
     const startDateStr = start.toISOString().slice(0, 10);
-    const endDateStr = end ? end.toISOString().slice(0, 10) : start.toISOString().slice(0, 10); // Si no hay 'end', usar 'start'
+    const endDateStr = end ? end.toISOString().slice(0, 10) : startDateStr;
 
     const startIndex = dates.findIndex(date => date >= startDateStr);
     const endIndex = end ? dates.findIndex(date => date > endDateStr) : dates.length;
@@ -59,53 +65,59 @@ const filterDataByDate = (dates, prices, days) => {
     };
 };
 
-
-const fillMissingDates = (dates, prices) => {
-    let filledDates = [];
-    let filledPrices = [];
+/**
+ * @function structureDatePriceData
+ * @description Structures dates and prices data, filling in missing dates.
+ * @param {Array<string>} dates - The array of date strings.
+ * @param {Array<number>} prices - The array of prices.
+ * @returns {Object} - An object containing structured 'dates' and 'prices'.
+ */
+const structureDatePriceData = (dates, prices) => {
+    let structuredDates = [];
+    let structuredPrices = [];
 
     for (let i = 0; i < dates.length - 1; i++) {
-        filledDates.push(dates[i]);
-        filledPrices.push(prices[i]);
+        structuredDates.push(dates[i]);
+        structuredPrices.push(prices[i]);
 
         let currentDate = new Date(dates[i]);
         let nextDate = new Date(dates[i + 1]);
-        let dayDifference = (nextDate - currentDate) / (1000 * 3600 * 24);
+        let dayGap = (nextDate - currentDate) / (1000 * 3600 * 24);
 
-        while (dayDifference > 1) {
+        while (dayGap > 1) {
             currentDate.setDate(currentDate.getDate() + 1);
-            filledDates.push(currentDate.toISOString().slice(0, 10));
-            filledPrices.push(prices[i]);
-            dayDifference--;
+            structuredDates.push(currentDate.toISOString().slice(0, 10));
+            structuredPrices.push(prices[i]);
+            dayGap--;
         }
     }
 
-    filledDates.push(dates[dates.length - 1]);
-    filledPrices.push(prices[prices.length - 1]);
+    structuredDates.push(dates[dates.length - 1]);
+    structuredPrices.push(prices[prices.length - 1]);
 
-    return { dates: filledDates, prices: filledPrices };
+    return { dates: structuredDates, prices: structuredPrices };
 };
 
-const getStartDateFromDays = (days) => {
+/**
+ * @function calculateTimeSpan
+ * @description Calculates the start and end dates for a given time span in days.
+ * @param {number} days - The number of days for the time span.
+ * @returns {Object} - An object containing 'start' and 'end' Date objects.
+ */
+const calculateTimeSpan = (days) => {
     const today = new Date();
     switch (days) {
-        case 0: // YTD custom, el año completo anterior
-            return {
-                start: new Date(`${today.getFullYear() - 1}-01-01`),
-                end: null
-            };
+        case 0:
+            return { start: new Date(`${today.getFullYear() - 1}-01-01`), end: null };
         case 2:
-            return {
-                start: new Date(today.setDate(today.getDate() - 1)),
-                end: null
-            };
-        case 7: // Semana pasada
+            return { start: new Date(today.setDate(today.getDate() - 1)), end: null };
+        case 7:
             return { start: new Date(today.setDate(today.getDate() - 7)), end: null };
-        case 31: // Mes anterior
+        case 31:
             return { start: new Date(today.setMonth(today.getMonth() - 1)), end: null };
-        case 1825: // 5 años
+        case 1825:
             return { start: new Date(today.setFullYear(today.getFullYear() - 5)), end: null };
-        case 3650: // 10 años
+        case 3650:
             return { start: new Date(today.setFullYear(today.getFullYear() - 10)), end: null };
         default:
             return { start: null, end: null };
