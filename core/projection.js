@@ -1,4 +1,4 @@
-import { createRect, valueInThousands, tickValues, buildCircle, calculateXTicks, getTickFormat } from '../helpers/helper.js';
+import { createRect, valueInThousands, tickValues, buildCircle, calculateXTicks, getTickFormat, buildTooltip } from '../helpers/helper.js';
 import { generateDummyProjectionsData } from '../helpers/dummyData.js';
 /**
  * Se encarga de construir el gráfico de proyección.
@@ -23,8 +23,6 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
     const adjustedWidth = width - overflowWidth;
     const overflowHeight = 35; // Altura del desbordamiento
     const adjustedHeight = height - overflowHeight; // Altura ajustada para el gráfico
-
-    console.log('adjustedHeight', adjustedHeight);
 
     // Si hay desbordamiento, dibujar el área de desbordamiento primero
     const defs = group.append("defs");
@@ -256,9 +254,8 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
             .duration(2000)
             .attr('stroke-dashoffset', 0);
 
-        if (timeframe === 0) {
-            buildCircle(group, xPosition, yPosition, xScale, yScale, lastData, false, 3000);
-        }
+        buildCircle(group, xPosition, yPosition, xScale, yScale, lastData, false, 3000);
+        buildTooltip(group, xPosition, yPosition, width, adjustedHeight, xScale, yScale, data);
     }
 
     return;
@@ -409,7 +406,13 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
             .attr('height', 0)
             .attr('fill', `url(#${gradientId})`)
             .attr('rx', borderRadius)
-            .attr('ry', borderRadius);
+            .attr('ry', borderRadius)
+            .datum(p)
+            .on('mouseover', (event, d) => {
+                const [x, y] = d3.pointer(event);
+                showTooltipProjection(d, x + window.scrollX, y + window.scrollY);
+            })
+            .on('mouseout', hideTooltipProjection);
 
         rect.transition()
             .duration(1000)
@@ -453,7 +456,13 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
             .attr('cx', xStart)
             .attr('cy', yMax + 30) // Iniciar un poco más abajo
             .attr('r', 0) // Comenzar con radio 0
-            .attr('fill', '#24C6C8');
+            .attr('fill', '#24C6C8')
+            .datum(p)
+            .on('mouseover', (event, d) => {
+                const [x, y] = d3.pointer(event);
+                showTooltipProjection(d, x + window.scrollX, y + window.scrollY);
+            })
+            .on('mouseout', hideTooltipProjection);
 
         circleProjection.transition()
             .duration(1000)
@@ -461,17 +470,11 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
             .attr('r', 5) // Expande el radio a 15
             .attr('cy', yMax); // Mueve el círculo a su posición final
     });
-
 };
 
 const drawOverflowRect = (group, xPosition, yPosition, height, width, hasOverflow) => {
     if (hasOverflow) {
-        console.log('has overflow', {
-            'xPosition': xPosition,
-            'yPosition': yPosition,
-            'height': height,
-            'width': width
-        });
+
         const horizontalLine = group.append('line')
             .attr('x1', xPosition)
             .attr('y1', yPosition + height + 12)
@@ -557,5 +560,36 @@ const drawTopRightOverflowRect = (group, xPosition, yPosition, overflowHeight, o
         .attr('fill', "url(#diagonalStripes)");
 
     return topRightOverflowGroup;
+};
+
+const createTooltipProjection = () => {
+    let tooltip = d3.select('body').selectAll('.tooltip-projection').data([null]);
+    tooltip = tooltip.enter()
+        .append('div')
+        .attr('class', 'tooltip-projection')
+        .style('position', 'absolute')
+        .style('background-color', 'white')
+        .style('padding', '10px')
+        .style('border-radius', '5px')
+        .style('border', '1px solid #ccc')
+        .style('pointer-events', 'none')
+        .style('opacity', 0)
+        .merge(tooltip);
+    
+    return tooltip;
+};
+
+const tooltip = createTooltipProjection();
+
+const showTooltipProjection = (d, x, y) => {
+    tooltip
+        .html(`Fecha: ${d.startDate.toLocaleDateString()} - ${d.endDate.toLocaleDateString()}<br>Valor Mínimo: ${d.minValue}<br>Valor Máximo: ${d.maxValue}`)
+        .style('opacity', 1)
+        .style('left', `${x}px`)
+        .style('top', `${y}px`);
+};
+
+const hideTooltipProjection = () => {
+    tooltip.style('opacity', 0);
 };
 

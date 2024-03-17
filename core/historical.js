@@ -1,4 +1,4 @@
-import { createRect, valueInThousands, tickValues, buildCircle, calculateXTicks, getTickFormat } from '../helpers/helper.js';
+import { createRect, valueInThousands, tickValues, buildCircle, calculateXTicks, getTickFormat, buildTooltip } from '../helpers/helper.js';
 
 /**
  * Se encarga de construir el gráfico de histórico.
@@ -16,10 +16,6 @@ import { createRect, valueInThousands, tickValues, buildCircle, calculateXTicks,
 
 
 export const buildHistoricalChart = (group, width, height, xPosition, yPosition, only, data, lastData, highestValue, timeframe) => {
-    // console.log({
-    //     'width': width,
-    //     'height': height,
-    // });
     const overflowHeight = 35; // Altura del desbordamiento
     const adjustedHeight = height - overflowHeight; // Altura ajustada para el gráfico
 
@@ -42,25 +38,25 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
         const currentTime = new Date();
         const oneDayAgo = new Date(currentTime.getTime() - 24 * 60 * 60 * 1000);
         xDomain = [oneDayAgo, currentTime];
-    
+
         let lastDataBeforeOneDayAgo = data.filter(d => d.date < oneDayAgo).pop();
         if (!lastDataBeforeOneDayAgo) {
             lastDataBeforeOneDayAgo = { date: oneDayAgo, value: 0 };
         } else {
             lastDataBeforeOneDayAgo = { ...lastDataBeforeOneDayAgo, date: oneDayAgo };
         }
-    
+
         let filteredData = data.filter(d => d.date >= oneDayAgo && d.date <= currentTime);
 
         filteredData.unshift(lastDataBeforeOneDayAgo);
-    
+
         lastData = { ...data[data.length - 1], date: currentTime };
         if (filteredData.length === 1) {
             filteredData.push(lastData);
         } else {
             filteredData[filteredData.length - 1] = lastData;
         }
-    
+
         data = filteredData;
     } else {
         xDomain = d3.extent(data, d => d.date);
@@ -187,6 +183,10 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
     if (timeframe != 0) {
         buildCircle(group, xPosition, yPosition, xScale, yScale, lastData);
     }
+
+
+    buildTooltip(group, xPosition, yPosition, width, adjustedHeight, xScale, yScale, data);
+
 
     return;
 };
