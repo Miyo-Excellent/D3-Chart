@@ -62,21 +62,34 @@ export const generateDummyProjectionsData = (startDate, endDate, valorActual) =>
     for (let i = 0; i < 20 && meses[i]; i++) {
         let min, max, inicioPeriodo, finPeriodo;
 
-        if (i < 5) {
+        if (i < 15) {
             // Proyecciones con periodos y valores aleatorios
             max = valorActual + Math.random() * (87.9 * 1000 - valorActual);
             min = Math.random() * max;
             inicioPeriodo = new Date(meses[i].getFullYear(), meses[i].getMonth(), 1);
             finPeriodo = new Date(meses[i].getFullYear(), meses[i].getMonth() + 1, 0);
         } else {
+
+            // con i = 20 1 normal, 1 doble overflow, 2 top overflow y 1 right overflow
             // Proyecciones con fechas y valores fijos
             min = max = valorActual + Math.random() * (87.9 * 1000 - valorActual)
             inicioPeriodo = finPeriodo = new Date(meses[i]);
 
-            // testing purposes, uncomment to see the 10 year projection
+            // testing purposes, uncomment for overflows
+            if (i > 15) {
+                if (i % 2 === 0) {
+                    min = max = 900000;
+                } else {
+                    inicioPeriodo.setFullYear(inicioPeriodo.getFullYear() + 10);
+                    finPeriodo.setFullYear(finPeriodo.getFullYear() + 10);
+                }
 
-            // inicioPeriodo.setFullYear(inicioPeriodo.getFullYear() + 10);
-            // finPeriodo.setFullYear(finPeriodo.getFullYear() + 10);
+                if (i > 18) {
+                    min = max = 400000;
+                    inicioPeriodo.setFullYear(inicioPeriodo.getFullYear() + 10);
+                    finPeriodo.setFullYear(finPeriodo.getFullYear() + 10);
+                }
+            }
         }
 
         proyecciones.push({

@@ -1,4 +1,4 @@
-import { createRect, valueInThousands, tickValues, buildCircle, calculateXTicks, getTickFormat } from '../helpers/helper.js';
+import { createRect, valueInThousands, tickValues, buildCircle, calculateXTicks, getTickFormat, buildTooltip } from '../helpers/helper.js';
 import { generateDummyProjectionsData } from '../helpers/dummyData.js';
 /**
  * Se encarga de construir el gráfico de proyección.
@@ -14,13 +14,12 @@ import { generateDummyProjectionsData } from '../helpers/dummyData.js';
  * @returns {Promise<void>}
  */
 
-export const buildProjectionChart = (group, width, height, xPosition, yPosition, only, data, lastData, highestValue, hasOverflow, years, timeframe) => {
+export const buildProjectionChart = (group, width, height, xPosition, yPosition, only, data, lastData, highestValue, hasOverflow, timeframe) => {
     const overflowWidth = hasOverflow ? 35 : 0;
     const adjustedWidth = width - overflowWidth;
-    const overflowHeight = 35; // Altura del desbordamiento
-    const adjustedHeight = height - overflowHeight; // Altura ajustada para el gráfico
+    const overflowHeight = 35;
+    const adjustedHeight = height - overflowHeight;
 
-    // Si hay desbordamiento, dibujar el área de desbordamiento primero
     const defs = group.append("defs");
     const pattern = defs.append("pattern")
         .attr("id", "diagonalStripes")
@@ -40,28 +39,15 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
         .attr("transform", "translate(15,0)")
         .attr("fill", "#ECECEC");
 
-    // Aplicar el patrón al área de desbordamiento en la parte superior
-    // group.append('rect')
-    //     .attr('x', xPosition)
-    //     .attr('y', yPosition)
-    //     .attr('width', width)
-    //     .attr('height', overflowHeight)
-    //     .attr('fill', "url(#diagonalStripes)");
-
-    // Ajustar la posición y para el resto del gráfico
     yPosition += overflowHeight;
 
-    // Crear el fondo del gráfico en la posición ajustada
     createRect(group, xPosition, yPosition, width, adjustedHeight, '#FFFFFF');
     drawOuterLines(group, xPosition, yPosition, adjustedHeight, adjustedWidth, hasOverflow);
-
     drawOverflowRect(group, xPosition + adjustedWidth, yPosition, adjustedHeight, overflowHeight, hasOverflow);
 
-    // if time frame is 0 then today date will be first day of the year, present year
     const today = timeframe === 0 ? new Date(new Date().getFullYear(), 0, 1) : new Date();
-    const todayTo = timeframe === 0 ? new Date(new Date().getFullYear(), 11, 31) : d3.utcDay.offset(today, timeframe);
+    const todayTo = timeframe === 0 ? new Date(new Date().getFullYear(), 11, 31) : d3.utcDay.offset(today, timeframe == 2 ? 1 : timeframe);
 
-    // dummy data
     const generateProjections = generateDummyProjectionsData(today, todayTo, lastData.close);
 
     const projectionData = generateProjections.map(p => ({
@@ -71,7 +57,6 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
         maxValue: p.max_value
     }));
 
-    // dummy data
 
     const xDomain = [today, todayTo];
     const yDomain = [0, highestValue];
@@ -110,9 +95,7 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
             break;
     }
 
-
     const xTicks = calculateXTicks(today, end, tickCount, shouldOmitFirstTick);
-
     const yTicks = tickValues(highestValue, 9, 10);
 
     group.append('g')
@@ -148,14 +131,11 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
             .attr('stroke', '#ECECEC')
             .attr('x2', -adjustedWidth));
 
-    // Calcula la posición Y para centrar elementos en el área de desbordamiento
     const yCenterOverflow = overflowHeight / 2;
 
-    // Crear el grupo de desbordamiento y aplicar la escala xScale
     const overflowGroup = group.append('g')
         .attr('transform', `translate(${xPosition},${yPosition - overflowHeight})`);
 
-    // Aplicar el patrón al área de desbordamiento en la parte superior
     overflowGroup.append('rect')
         .attr('width', width)
         .attr('height', overflowHeight)
@@ -207,27 +187,53 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
 
     let lateralOverflowGroup = null;
     let xCenterLateralOverflow = null;
+    let squareOverflowGroup = null;
 
     if (hasOverflow) {
-        // Crear el grupo de desbordamiento lateral
         lateralOverflowGroup = group.append('g')
             .attr('transform', `translate(${xPosition + adjustedWidth},${yPosition})`);
-    
-        // Aplicar el patrón al rectángulo de desbordamiento
         lateralOverflowGroup.append('rect')
             .attr('width', overflowWidth)
             .attr('height', adjustedHeight + 1)
             .attr('fill', "url(#diagonalStripes)");
-    
-        // Calcula el centro del desbordamiento lateral
         xCenterLateralOverflow = overflowWidth / 2;
+
+        squareOverflowGroup = drawTopRightOverflowRect(group, xPosition, yPosition, overflowHeight, overflowWidth, width);
     }
-    
 
-    populateChart(group, xPosition, yPosition, xScale, yScale, projectionData, lastData, highestValue, start, end, overflowGroup, yCenterOverflow, lateralOverflowGroup, xCenterLateralOverflow);
 
-    if (only === true) {
+    populateChart(group, xPosition, yPosition, xScale, yScale, projectionData, lastData, highestValue, start, end, overflowGroup, yCenterOverflow, lateralOverflowGroup, xCenterLateralOverflow, squareOverflowGroup);
+
+    if (only === true && timeframe !== 0) {
+        if (timeframe === 2 || timeframe === 7 || timeframe === 31) {
+            // we need to change the date of the last data using the first date of the scale x axis
+            lastData.date = xScale.invert(0);
+        }
         buildCircle(group, xPosition, yPosition, xScale, yScale, lastData, true);
+    }
+
+    if (timeframe === 0) {
+        const groupLine = d3.line()
+            .x(d => xScale(d.date) + xPosition)
+            .y(d => yScale(d.close) + yPosition);
+        const path = group.append('path')
+            .datum(data)
+            .attr('fill', 'none')
+            .attr('stroke', '#17A2B8')
+            .attr('stroke-width', 1.5)
+            .attr('d', groupLine);
+
+        const totalLength = path.node().getTotalLength();
+
+        path.attr('stroke-dasharray', totalLength + " " + totalLength)
+            .attr('stroke-dashoffset', totalLength)
+            .transition()
+            .delay(2000)
+            .duration(2000)
+            .attr('stroke-dashoffset', 0);
+
+        buildCircle(group, xPosition, yPosition, xScale, yScale, lastData, false, 3000);
+        buildTooltip(group, xPosition, yPosition, width, adjustedHeight, xScale, yScale, data);
     }
 
     return;
@@ -307,10 +313,9 @@ const drawOuterLines = (group, xPosition, yPosition, height, width, hasOverflow)
 
 };
 
-const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionData, lastData, highestValue, start, end, overflowGroup, yCenterOverflow, lateralOverflowGroup, xCenterLateralOverflow) => {
+const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionData, lastData, highestValue, start, end, overflowGroup, yCenterOverflow, lateralOverflowGroup, xCenterLateralOverflow, squareOverflowGroup) => {
     const defs = group.append('defs');
 
-    // Primero dibujamos todos los rangos
     projectionData.forEach((p, i) => {
         if (p.startDate.getTime() === p.endDate.getTime() && p.minValue === p.maxValue) {
             return;
@@ -377,7 +382,13 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
             .attr('height', 0)
             .attr('fill', `url(#${gradientId})`)
             .attr('rx', borderRadius)
-            .attr('ry', borderRadius);
+            .attr('ry', borderRadius)
+            .datum(p)
+            .on('mouseover', (event, d) => {
+                const [x, y] = d3.pointer(event);
+                showTooltipProjection(d, x + window.scrollX, y + window.scrollY);
+            })
+            .on('mouseout', hideTooltipProjection);
 
         rect.transition()
             .duration(1000)
@@ -386,27 +397,27 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
             .attr('height', rectHeight);
     });
 
-    // Luego dibujamos todos los puntos específicos
     projectionData.forEach((p, i) => {
         if (p.startDate.getTime() !== p.endDate.getTime() || p.minValue !== p.maxValue) {
             return;
         }
 
-        if (p.minValue > highestValue || p.startDate < start) {
-            if (p.minValue > highestValue) {
-                overflowGroup.append('circle')
-                    .attr('cx', xScale(p.startDate))
-                    .attr('cy', yCenterOverflow)
-                    .attr('r', 5)
-                    .attr('fill', 'red');
-            }
-            return;
-        }
-
-        if (p.startDate > end && lateralOverflowGroup) {
+        if (p.minValue > highestValue && p.startDate > end && squareOverflowGroup) {
+            squareOverflowGroup.append('circle')
+                .attr('cx', xCenterLateralOverflow)
+                .attr('cy', yCenterOverflow)
+                .attr('r', 5)
+                .attr('fill', 'red');
+        } else if (p.minValue > highestValue || p.startDate < start) {
+            overflowGroup.append('circle')
+                .attr('cx', xScale(p.startDate))
+                .attr('cy', yCenterOverflow)
+                .attr('r', 5)
+                .attr('fill', 'red');
+        } else if (p.startDate > end && lateralOverflowGroup) {
             lateralOverflowGroup.append('circle')
                 .attr('cx', xCenterLateralOverflow)
-                .attr('cy', yScale(p.maxValue) + yPosition)
+                .attr('cy', yScale(p.maxValue))
                 .attr('r', 5)
                 .attr('fill', 'red');
         }
@@ -416,21 +427,27 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
 
         const circleProjection = group.append('circle')
             .attr('cx', xStart)
-            .attr('cy', yMax + 30) // Iniciar un poco más abajo
-            .attr('r', 0) // Comenzar con radio 0
-            .attr('fill', '#24C6C8');
+            .attr('cy', yMax + 30)
+            .attr('r', 0)
+            .attr('fill', '#24C6C8')
+            .datum(p)
+            .on('mouseover', (event, d) => {
+                const [x, y] = d3.pointer(event);
+                showTooltipProjection(d, x + window.scrollX, y + window.scrollY);
+            })
+            .on('mouseout', hideTooltipProjection);
 
         circleProjection.transition()
             .duration(1000)
             .delay(i * 50)
-            .attr('r', 5) // Expande el radio a 15
-            .attr('cy', yMax); // Mueve el círculo a su posición final
+            .attr('r', 5)
+            .attr('cy', yMax);
     });
-
 };
 
 const drawOverflowRect = (group, xPosition, yPosition, height, width, hasOverflow) => {
     if (hasOverflow) {
+
         const horizontalLine = group.append('line')
             .attr('x1', xPosition)
             .attr('y1', yPosition + height + 12)
@@ -479,7 +496,7 @@ const drawOverflowRect = (group, xPosition, yPosition, height, width, hasOverflo
 
     verticalLine.transition()
         .duration(1500)
-        .attr('y2', yPosition) // Punto final en Y
+        .attr('y2', yPosition)
         .on('end', () => drawInclinedLineY(group, xPositionAdjusted + widthAdjusted, yPosition));
 
     function drawInclinedLineY() {
@@ -503,5 +520,48 @@ const drawOverflowRect = (group, xPosition, yPosition, height, width, hasOverflo
             .attr('x2', xPositionAdjusted + widthAdjusted + offsetX / 2)
             .attr('y2', yPosition + 2 - offsetY / 2);
     }
+};
+
+const drawTopRightOverflowRect = (group, xPosition, yPosition, overflowHeight, overflowWidth, width) => {
+    const topRightOverflowGroup = group.append('g')
+        .attr('transform', `translate(${xPosition + width - overflowWidth},${yPosition - overflowHeight})`);
+
+    topRightOverflowGroup.append('rect')
+        .attr('width', overflowWidth)
+        .attr('height', overflowHeight)
+        .attr('fill', "url(#diagonalStripes)");
+
+    return topRightOverflowGroup;
+};
+
+const createTooltipProjection = () => {
+    let tooltip = d3.select('body').selectAll('.tooltip-projection').data([null]);
+    tooltip = tooltip.enter()
+        .append('div')
+        .attr('class', 'tooltip-projection')
+        .style('position', 'absolute')
+        .style('background-color', 'white')
+        .style('padding', '10px')
+        .style('border-radius', '5px')
+        .style('border', '1px solid #ccc')
+        .style('pointer-events', 'none')
+        .style('opacity', 0)
+        .merge(tooltip);
+    
+    return tooltip;
+};
+
+const tooltip = createTooltipProjection();
+
+const showTooltipProjection = (d, x, y) => {
+    tooltip
+        .html(`Fecha: ${d.startDate.toLocaleDateString()} - ${d.endDate.toLocaleDateString()}<br>Valor Mínimo: ${d.minValue}<br>Valor Máximo: ${d.maxValue}`)
+        .style('opacity', 1)
+        .style('left', `${x}px`)
+        .style('top', `${y}px`);
+};
+
+const hideTooltipProjection = () => {
+    tooltip.style('opacity', 0);
 };
 
