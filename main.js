@@ -1,10 +1,10 @@
-import { fetchMarketData } from './apis/coinGekko/index.js';
+import { fetchMarketData } from './apis/TwelveData/index.js';
 import { addButtonListeners } from './core/buttonUtils.js';
 import { buildChart, updateChart } from './core/chartUtils.js';
 
 // Global states for the chart
 let chartState = {
-  timeframe: 3650,
+  timeframe: 31, // 3650
   context: 1
 };
 
