@@ -1,11 +1,11 @@
 body {
-    background-color: #3C5164;
+    background-color: #FFFFFF;
 }
 
 .button-bar {
     display: none;
     justify-content: space-between;
-    width: 0px;
+    width: 100%;
     position: relative;
     top: 20px;
 }
@@ -15,22 +15,21 @@ body {
 }
 
 .left-group {
-    background-color: #FFFFFF0F;
     border-radius: 11px 11px 0px 0px;
-    padding: 15px;
+    padding: 3px;
     align-self: stretch;
 }
 
 .center-group {
     position: absolute;
-    left: 50%;
+    left: 59%;
     transform: translateX(-50%);
-    padding: 15px;
+    padding: 3px;
     align-self: stretch;
 }
 
 .right-group {
-    padding: 15px 0px;
+    padding: 3px 0px;
     align-self: stretch;
 }
 
@@ -43,7 +42,7 @@ body {
     margin-right: 8px;
     cursor: pointer;
     transition: background-color 0.3s;
-    color: white;
+    color: #000;
     font-family: Montserrat;
     font-size: 10px;
     font-style: normal;
@@ -72,11 +71,13 @@ body {
 
 .btn.left.active,
 .btn.center.active {
-    background-color: #17A2B8;
+    background-color: #000;
+    color: #FFFFFF;
 }
 
 .btn:hover {
-    background-color: #17A2B8;
+    background-color: #000;
+    color: #FFFFFF;
 }
 
 .button-group .btn:last-child {

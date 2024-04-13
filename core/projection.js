@@ -31,17 +31,17 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
     pattern.append("rect")
         .attr("width", 15)
         .attr("height", 30)
-        .attr("fill", "#FFFFFF");
+        .attr("fill", "#EAEAEA");
 
     pattern.append("rect")
         .attr("width", 15)
         .attr("height", 30)
         .attr("transform", "translate(15,0)")
-        .attr("fill", "#ECECEC");
+        .attr("fill", "#EFEFEF");
 
     yPosition += overflowHeight;
 
-    createRect(group, xPosition, yPosition, width, adjustedHeight, '#FFFFFF');
+    createRect(group, xPosition, yPosition, width, adjustedHeight, '#F7F8FA');
     drawOuterLines(group, xPosition, yPosition, adjustedHeight, adjustedWidth, hasOverflow);
     drawOverflowRect(group, xPosition + adjustedWidth, yPosition, adjustedHeight, overflowHeight, hasOverflow);
 
@@ -112,7 +112,7 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
             .style('font-weight', '500')
             .style('line-height', '15px')
             .style('letter-spacing', '0.4285714030265808px')
-            .style('fill', '#D6D9DC'));
+            .style('fill', '#616161'));
 
     group.append('g')
         .attr('transform', `translate(${xPosition + adjustedWidth},${yPosition})`)
@@ -126,7 +126,7 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
             .style('line-height', '15px')
             .style('letter-spacing', '0.4285714030265808px')
             .style('text-align', 'left')
-            .style('fill', '#D6D9DC'))
+            .style('fill', '#616161'))
         .call(g => g.selectAll('.tick line')
             .attr('stroke', '#ECECEC')
             .attr('x2', -adjustedWidth));
@@ -154,7 +154,7 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
                 .style('line-height', '15px')
                 .style('letter-spacing', '0.4285714030265808px')
                 .style('text-align', 'left')
-                .style('fill', '#D6D9DC'))
+                .style('fill', '#616161'))
             .call(g => g.selectAll('.tick line')
                 .attr('stroke', '#ECECEC')
                 .attr('x2', adjustedWidth));
@@ -245,7 +245,7 @@ const drawOuterLines = (group, xPosition, yPosition, height, width, hasOverflow)
         .attr('y1', yPosition + height + 12)
         .attr('x2', xPosition + 5)
         .attr('y2', yPosition + height + 12)
-        .attr('stroke', '#BDC2C7')
+        .attr('stroke', '#616161')
         .attr('stroke-width', 1.5);
 
     horizontalLine.transition()
@@ -266,7 +266,7 @@ const drawOuterLines = (group, xPosition, yPosition, height, width, hasOverflow)
             .attr('y1', yPosition + height + 12 + offsetY)
             .attr('x2', xPosition + width - 6 - offsetX) // Comenzar con la línea vertical coincidiendo con la horizontal
             .attr('y2', yPosition + height + 12 + offsetY)
-            .attr('stroke', '#BDC2C7')
+            .attr('stroke', '#616161')
             .attr('stroke-width', 1.5)
             .transition()
             .duration(500)
@@ -281,7 +281,7 @@ const drawOuterLines = (group, xPosition, yPosition, height, width, hasOverflow)
         .attr('y1', yPosition + height)
         .attr('x2', xPositionAdjusted + width + 10)
         .attr('y2', yPosition + height)
-        .attr('stroke', '#BDC2C7')
+        .attr('stroke', '#616161')
         .attr('stroke-width', 1.5);
 
     verticalLine.transition()
@@ -302,7 +302,7 @@ const drawOuterLines = (group, xPosition, yPosition, height, width, hasOverflow)
             .attr('y1', yPosition + 6 + offsetY / 2)
             .attr('x2', xPositionAdjusted + width + 10 + offsetX / 2)
             .attr('y2', yPosition + 6 + offsetY / 2)
-            .attr('stroke', '#BDC2C7')
+            .attr('stroke', '#616161')
             .attr('stroke-width', 1.5);
 
         inclinedLine.transition()
@@ -453,7 +453,7 @@ const drawOverflowRect = (group, xPosition, yPosition, height, width, hasOverflo
             .attr('y1', yPosition + height + 12)
             .attr('x2', xPosition)
             .attr('y2', yPosition + height + 12)
-            .attr('stroke', '#BDC2C7')
+            .attr('stroke', '#616161')
             .attr('stroke-width', 1.5);
 
         horizontalLine.transition()
@@ -474,7 +474,7 @@ const drawOverflowRect = (group, xPosition, yPosition, height, width, hasOverflo
                 .attr('y1', yPosition + height + 12 - offsetY)
                 .attr('x2', xPosition + offsetX)
                 .attr('y2', yPosition + height + 12 - offsetY)
-                .attr('stroke', '#BDC2C7')
+                .attr('stroke', '#616161')
                 .attr('stroke-width', 1.5)
                 .transition()
                 .duration(500)
@@ -491,7 +491,7 @@ const drawOverflowRect = (group, xPosition, yPosition, height, width, hasOverflo
         .attr('y1', 20)
         .attr('x2', xPositionAdjusted + widthAdjusted)
         .attr('y2', 20)
-        .attr('stroke', '#BDC2C7')
+        .attr('stroke', '#616161')
         .attr('stroke-width', 1.5);
 
     verticalLine.transition()
@@ -512,7 +512,7 @@ const drawOverflowRect = (group, xPosition, yPosition, height, width, hasOverflo
             .attr('y1', yPosition - 1 + offsetY / 2)
             .attr('x2', xPositionAdjusted + widthAdjusted - offsetX / 2)
             .attr('y2', yPosition - 1 + offsetY / 2)
-            .attr('stroke', '#BDC2C7')
+            .attr('stroke', '#616161')
             .attr('stroke-width', 1.5);
 
         inclinedLine.transition()

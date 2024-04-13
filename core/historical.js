@@ -24,11 +24,11 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
         .attr('y', yPosition)
         .attr('width', width)
         .attr('height', overflowHeight)
-        .attr('fill', "#293C4B");
+        .attr('fill', "#FFFFFF");
 
     yPosition += overflowHeight;
 
-    createRect(group, xPosition, yPosition, width, adjustedHeight, '#293C4B');
+    createRect(group, xPosition, yPosition, width, adjustedHeight, '#FFFFFF');
 
 
     let xDomain;
@@ -111,7 +111,7 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
             .style('font-weight', '500')
             .style('line-height', '15px')
             .style('letter-spacing', '0.4285714030265808px')
-            .style('fill', '#D6D9DC'));
+            .style('fill', '#616161'));
 
     group.append('g')
         .attr('transform', `translate(${xPosition},${yPosition})`)
@@ -125,9 +125,9 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
             .style('line-height', '15px')
             .style('letter-spacing', '0.4285714030265808px')
             .style('text-align', 'left')
-            .style('fill', '#D6D9DC'))
+            .style('fill', '#616161'))
         .call(g => g.selectAll('.tick line')
-            .attr('stroke', '#3A4B59')
+            .attr('stroke', '#E5E9EB')
             .attr('x2', width));
 
     if (only === true) {
@@ -143,9 +143,9 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
                 .style('line-height', '15px')
                 .style('letter-spacing', '0.4285714030265808px')
                 .style('text-align', 'left')
-                .style('fill', '#D6D9DC'))
+                .style('fill', '#616161'))
             .call(g => g.selectAll('.tick line')
-                .attr('stroke', '#3A4B59')
+                .attr('stroke', '#E5E9EB')
                 .attr('x2', -width));
     }
 
@@ -156,8 +156,8 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
     const path = group.append('path')
         .datum(data)
         .attr('fill', 'none')
-        .attr('stroke', '#17A2B8')
-        .attr('stroke-width', 1.5)
+        .attr('stroke', '#0C66E4')
+        .attr('stroke-width', 2)
         .attr('d', groupLine);
 
     const totalLength = path.node().getTotalLength();
