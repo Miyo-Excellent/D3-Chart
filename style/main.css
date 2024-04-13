@@ -22,7 +22,7 @@ body {
 
 .center-group {
     position: absolute;
-    left: 59%;
+    left: 39%;
     transform: translateX(-50%);
     padding: 3px;
     align-self: stretch;

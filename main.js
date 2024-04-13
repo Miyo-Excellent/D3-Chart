@@ -17,8 +17,8 @@ let chartState = {
  */
 const initApp = async () => {
   // const width = window.innerWidth - 20; // Modificado aquí
-  const width = 900; // Modificado aquí
-  const height = 360;
+  const width = 952; // Modificado aquí
+  const height = 465;
   const margin = { top: 20, right: 70, bottom: 50, left: 70 };
   const data = await fetchMarketData(chartState.timeframe);
 
