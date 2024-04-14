@@ -355,12 +355,6 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
 
         const circleColor = yMid >= yLastDatum ? '#F76659' : '#1ED36F';
 
-        group.append('circle')
-            .attr('cx', (xStart + xEnd) / 2)
-            .attr('cy', yMid)
-            .attr('r', 3) // El radio puede ser ajustado según necesites
-            .attr('fill', circleColor);
-
         const gradient = defs.append('linearGradient')
             .attr('id', gradientId)
             .attr('x1', '0%')
@@ -407,6 +401,17 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
             .delay(i * 50)
             .attr('y', yMax)
             .attr('height', rectHeight);
+
+        const middleCircle = group.append('circle')
+            .attr('cx', (xStart + xEnd) / 2)
+            .attr('cy', yMid)
+            .attr('r', 0) // El radio puede ser ajustado según necesites
+            .attr('fill', circleColor);
+
+        middleCircle.transition()
+            .duration(1000)
+            .delay(i * 70)
+            .attr('r', 3);
     });
 
     projectionData.forEach((p, i) => {
