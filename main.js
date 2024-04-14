@@ -5,7 +5,7 @@ import { buildChart, updateChart } from './core/chartUtils.js';
 // Global states for the chart
 let chartState = {
   timeframe: 3650, // 3650
-  context: 0
+  context: 1
 };
 
 
@@ -16,8 +16,9 @@ let chartState = {
  * initApp();
  */
 const initApp = async () => {
-  const width = window.innerWidth - 20; // Modificado aquí
-  const height = 540;
+  // const width = window.innerWidth - 20; // Modificado aquí
+  const width = 952; // Modificado aquí
+  const height = 452;
   const margin = { top: 20, right: 70, bottom: 50, left: 70 };
   const data = await fetchMarketData(chartState.timeframe);
 
