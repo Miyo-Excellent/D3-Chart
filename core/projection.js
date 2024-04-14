@@ -316,7 +316,7 @@ const drawOuterLines = (group, xPosition, yPosition, height, width, hasOverflow)
 
 const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionData, lastData, highestValue, start, end, overflowGroup, yCenterOverflow, lateralOverflowGroup, xCenterLateralOverflow, squareOverflowGroup) => {
     const defs = group.append('defs');
-
+    const maxWidth = 10;
     projectionData.forEach((p, i) => {
         if (p.startDate.getTime() === p.endDate.getTime() && p.minValue === p.maxValue) {
             return;
@@ -343,12 +343,23 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
 
         const xStart = xScale(p.startDate) + xPosition;
         const xEnd = xScale(p.endDate > end ? end : p.endDate) + xPosition;
+        const width = Math.min(maxWidth, xEnd - xStart - 1);
         const yMax = yScale(p.maxValue > highestValue ? highestValue : p.maxValue) + yPosition;
         const yMin = yScale(p.minValue) + yPosition;
         const yLastDatum = yScale(lastData.close) + yPosition;
 
         const gradientId = `gradient-${i}`;
         const offset = ((yLastDatum - yMax) / (yMin - yMax)) * 100;
+
+        const yMid = (yMax + yMin) / 2;
+
+        const circleColor = yMid >= yLastDatum ? '#F76659' : '#1ED36F';
+
+        group.append('circle')
+            .attr('cx', (xStart + xEnd) / 2)
+            .attr('cy', yMid)
+            .attr('r', 3) // El radio puede ser ajustado según necesites
+            .attr('fill', circleColor);
 
         const gradient = defs.append('linearGradient')
             .attr('id', gradientId)
@@ -377,8 +388,8 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
         const borderRadius = Math.min(maxBorderRadius, rectHeight / 2);
 
         const rect = group.append('rect')
-            .attr('x', xStart)
-            .attr('width', xEnd - xStart)
+            .attr('x', xStart + (xEnd - xStart) / 2 - width / 2) // Centra el rectángulo
+            .attr('width', width)
             .attr('y', yMin)
             .attr('height', 0)
             .attr('fill', `url(#${gradientId})`)
