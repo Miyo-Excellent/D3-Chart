@@ -388,13 +388,13 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
             .attr('height', 0)
             .attr('fill', `url(#${gradientId})`)
             .attr('rx', borderRadius)
-            .attr('ry', borderRadius)
-            .datum(p)
-            .on('mouseover', (event, d) => {
-                const [x, y] = d3.pointer(event);
-                showTooltipProjection(d, x + window.scrollX, y + window.scrollY);
-            })
-            .on('mouseout', hideTooltipProjection);
+            .attr('ry', borderRadius);
+            // .datum(p)
+            // .on('mouseover', (event, d) => {
+            //     const [x, y] = d3.pointer(event);
+            //     showTooltipProjection(d, x + window.scrollX, y + window.scrollY);
+            // })
+            // .on('mouseout', hideTooltipProjection);
 
         rect.transition()
             .duration(1000)
@@ -406,7 +406,13 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
             .attr('cx', (xStart + xEnd) / 2)
             .attr('cy', yMid)
             .attr('r', 0) // El radio puede ser ajustado según necesites
-            .attr('fill', circleColor);
+            .attr('fill', circleColor)
+            .datum(p)
+            .on('mouseover', (event, d) => {
+                const [x, y] = d3.pointer(event);
+                showTooltipProjection(d, x + window.scrollX, y + window.scrollY);
+            })
+            .on('mouseout', hideTooltipProjection);
 
         middleCircle.transition()
             .duration(1000)
