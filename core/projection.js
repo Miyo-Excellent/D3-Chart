@@ -1,4 +1,4 @@
-import { createRect, valueInThousands, tickValues, buildCircle, calculateXTicks, getTickFormat, buildTooltip } from '../helpers/helper.js';
+import { createRect, valueInThousands, tickValues, buildCircle, calculateXTicks, getTickFormat, buildTooltip, abbreviateNumber } from '../helpers/helper.js';
 import { generateDummyProjectionsData } from '../helpers/dummyData.js';
 /**
  * Se encarga de construir el gráfico de proyección.
@@ -389,12 +389,12 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
             .attr('fill', `url(#${gradientId})`)
             .attr('rx', borderRadius)
             .attr('ry', borderRadius);
-            // .datum(p)
-            // .on('mouseover', (event, d) => {
-            //     const [x, y] = d3.pointer(event);
-            //     showTooltipProjection(d, x + window.scrollX, y + window.scrollY);
-            // })
-            // .on('mouseout', hideTooltipProjection);
+        // .datum(p)
+        // .on('mouseover', (event, d) => {
+        //     const [x, y] = d3.pointer(event);
+        //     showTooltipProjection(d, x + window.scrollX, y + window.scrollY);
+        // })
+        // .on('mouseout', hideTooltipProjection);
 
         rect.transition()
             .duration(1000)
@@ -412,7 +412,7 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
                 const [x, y] = d3.pointer(event);
                 showTooltipProjection(d, x + window.scrollX, y + window.scrollY);
             })
-            .on('mouseout', hideTooltipProjection);
+        .on('mouseout', hideTooltipProjection);
 
         middleCircle.transition()
             .duration(1000)
@@ -430,7 +430,8 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
                 .attr('cx', xCenterLateralOverflow)
                 .attr('cy', yCenterOverflow)
                 .attr('r', 2)
-                .attr('fill', '#24C6C8');
+                .attr('fill', '#24C6C8')
+                .datum(p)
         } else if (p.minValue > highestValue || p.startDate < start) {
             overflowGroup.append('circle')
                 .attr('cx', xScale(p.startDate))
@@ -557,34 +558,172 @@ const drawTopRightOverflowRect = (group, xPosition, yPosition, overflowHeight, o
     return topRightOverflowGroup;
 };
 
+
 const createTooltipProjection = () => {
+    // Crear y seleccionar el tooltip si ya existe
     let tooltip = d3.select('body').selectAll('.tooltip-projection').data([null]);
     tooltip = tooltip.enter()
         .append('div')
         .attr('class', 'tooltip-projection')
         .style('position', 'absolute')
-        .style('background-color', 'white')
-        .style('padding', '10px')
-        .style('border-radius', '5px')
-        .style('border', '1px solid #ccc')
+        .style('background-color', '#FFFFFF')
+        .style('padding', '16px 24px')
+        .style('box-shadow', '0 8px 16px 0 rgba(0, 0, 0, 0.12)')
+        .style('font-family', 'Montserrat, sans-serif')
         .style('pointer-events', 'none')
         .style('opacity', 0)
+        .style('transition', 'opacity 0.2s')
+        .style('display', 'flex')
+        .style('flex-direction', 'column')
+        .style('align-items', 'flex-start')
+        .style('gap', '5px')
+        .style('border-radius', '20px')
+        .style('background', 'linear-gradient(100deg, #FBFBFF 6.9%, rgba(255, 255, 255, 0.83) 84.24%)')
         .merge(tooltip);
+
+    // Contenedor padre que alinea elementos en columna
+    const container = tooltip.append('div')
+        .style('display', 'flex')
+        .style('flex-direction', 'column')
+        .style('align-items', 'flex-start')
+        .style('gap', '8px');
+
+    // Contenedor superior que tiene una estructura de fila
+    const topContainer = container.append('div')
+        .style('display', 'flex')
+        .style('flex-direction', 'row')
+        .style('justify-content', 'start')
+        .style('align-items', 'center')
+        .style('width', '100%'); // Asegúrate de establecer un ancho
+
+    // Contenedor izquierdo en el superior para la imagen redondeada
+    const leftTopContainer = topContainer.append('div')
+        .style('border-radius', '50%')
+        .style('width', '32px')
+        .style('height', '32px')
+        .style('overflow', 'hidden');
+
+    const gender = Math.random() < 0.5 ? 'men' : 'women';
+    const imageIndex = Math.floor(Math.random() * 99) + 1;
+
+    leftTopContainer.append('img')
+        .attr('src', `https://randomuser.me/api/portraits/${gender}/${imageIndex}.jpg`)
+        .style('width', '100%')
+        .style('height', '100%')
+        .style('style', 'object-fit: cover');
+
+    // Contenedor derecho en el superior para título y subtítulo
+    const rightTopContainer = topContainer.append('div')
+        .style('display', 'flex')
+        .style('justify-content', 'center')
+        .style('margin-left', '5px')
+        .style('flex-direction', 'column')
+        .style('height', '32px');
+
+    rightTopContainer.append('div')
+        .attr('class', 'tooltip-title')
+        .style('font-size', '16px')
+        .style('font-weight', '400')
+        .style('line-height', '1')
+        .style('color', '#212529')
+        .style('text-align', 'left')
+        .style('font-family', 'Montserrat')
+
+    rightTopContainer.append('div')
+        .attr('class', 'tooltip-subtitle')
+        .style('font-size', '12px')
+        .style('font-weight', '500')
+        .style('line-height', '1')
+        .style('color', '#212529')
+        .style('text-align', 'left')
+        .style('font-family', 'Montserrat')
+        .style('letter-spacing', '0.429px')
+
+    // Contenedor inferior para el contenido, con dos divisiones
+    const bottomContainer = container.append('div')
+        .style('display', 'flex')
+        .style('margin-top', '16px') // Espacio entre el contenedor superior e inferior
+        .style('flex-direction', 'row')
+        .style('justify-content', 'space-between') // Asegura que los hijos se distribuyan a lo largo del contenedor
+        .style('width', '100%');
+
+    // Subcontenedor izquierdo que incluirá el título y el contenido para "valuation range"
+    const leftBottomContainer = bottomContainer.append('div')
+        .style('display', 'flex')
+        .style('margin-right', '16px') // Espacio entre los subcontenedores
+        .style('flex-direction', 'column') // Organiza los hijos en columna
+        .style('align-items', 'flex-start'); // Alinea los hijos al inicio del contenedor
+
+    // Título para "valuation range"
+    leftBottomContainer.append('div')
+        .attr('class', 'valuation-range-title')
+        .text('VALUATION RANGE') // Texto de ejemplo para el título
+        .style('font-size', '10px')
+        .style('font-weight', '700')
+        .style('line-height', '12px')
+        .style('margin-bottom', '4px') // Espacio entre el título y el contenido
+        .style('text-transform', 'uppercase');
+
+    // Contenido para "valuation range"
+    leftBottomContainer.append('div')
+        .attr('class', 'valuation-range-value')
+        .text('$30B') // Texto de ejemplo para el contenido
+        .style('font-size', '16px')
+        .style('font-family', 'Montserrat')
+        .style('font-weight', '400') // Peso de la fuente para el contenido
+        .style('line-height', '24px'); // Line height para el contenido
+
+    // Subcontenedor derecho que incluirá el título y el contenido para "date range"
+    const rightBottomContainer = bottomContainer.append('div')
+        .style('display', 'flex')
+        .style('flex-direction', 'column') // Organiza los hijos en columna
+        .style('align-items', 'flex-start'); // Alinea los hijos al inicio del contenedor
+
+    // Título para "date range"
+    rightBottomContainer.append('div')
+        .attr('class', 'date-range-title')
+        .text('DATE RANGE') // Texto de ejemplo para el título
+        .style('font-size', '10px')
+        .style('font-weight', '700')
+        .style('line-height', '12px')
+        .style('margin-bottom', '4px') // Espacio entre el título y el contenido
+        .style('text-transform', 'uppercase');
+
+    // Contenido para "date range"
+    rightBottomContainer.append('div')
+        .attr('class', 'date-range-value')
+        .text('2020 → 2023') // Texto de ejemplo para el contenido
+        .style('font-size', '16px')
+        .style('font-family', 'Montserrat')
+        .style('font-weight', '400') // Peso de la fuente para el contenido
+        .style('line-height', '24px'); // Line height para el contenido
 
     return tooltip;
 };
 
+const showTooltipProjection = (d, x, y) => {
+    tooltip.select('.tooltip-title').text('Monica Smith');
+    tooltip.select('.tooltip-subtitle').text('Asesora de marketing digital');
+
+    let min = Math.round(d.minValue / 1000) * 1000;
+    let max = Math.round(d.maxValue / 1000) * 1000;
+
+    let isValueEqual = min === max;
+    let isDateEqual = d.startDate.getFullYear() === d.endDate.getFullYear();
+
+    let value = isValueEqual ? `$${abbreviateNumber(min)}` : `$${abbreviateNumber(min)} - $${abbreviateNumber(max)}`;
+    let date = isDateEqual ? `${d.startDate.getFullYear()}` : `${d.startDate.getFullYear()} → ${d.endDate.getFullYear()}`;
+
+    tooltip.select('.valuation-range-value').text(value);
+    tooltip.select('.date-range-value').text(date);
+
+    tooltip.style('opacity', 1)
+        .style('left', `${x - 250}px`)
+        .style('top', `${y - 150}px`);
+};
+
 const tooltip = createTooltipProjection();
 
-const showTooltipProjection = (d, x, y) => {
-    tooltip
-        .html(`Fecha: ${d.startDate.toLocaleDateString()} - ${d.endDate.toLocaleDateString()}<br>Valor Mínimo: ${d.minValue}<br>Valor Máximo: ${d.maxValue}`)
-        .style('opacity', 1)
-        .style('left', `${x}px`)
-        .style('top', `${y}px`);
-};
-
 const hideTooltipProjection = () => {
-    tooltip.style('opacity', 0);
+    tooltip.transition().style('opacity', 0);
 };
-
