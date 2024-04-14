@@ -29,7 +29,7 @@ export const buildChart = async (containerSelector, width, height, margin, conte
     const effectiveWidth = width - margin.left - margin.right;
     const effectiveHeight = height - margin.top - margin.bottom;
 
-    createButtonContainer(effectiveWidth, margin.left, margin.right, context);
+    createButtonContainer(width, margin.left, margin.right, context);
 
     const isOverflowing = (context === 1 || context === 2) && timeframe === 3650;
 
@@ -70,9 +70,9 @@ export const buildChart = async (containerSelector, width, height, margin, conte
  */
 export const createButtonContainer = (width, marginLeft, marginRight, context) => {
     d3.select('.button-bar')
-        .style('width', `${width}px`)
-        .style('margin-left', `${marginLeft}px`)
-        .style('margin-right', `${marginRight}px`)
+        // .style('width', `${width}px`)
+        // .style('margin-left', `${marginLeft}px`)
+        // .style('margin-right', `${marginRight}px`)
         .style('display', 'flex');
 
     const displayStyle = context === 0 ? 'none' : 'flex';

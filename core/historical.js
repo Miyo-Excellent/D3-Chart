@@ -16,7 +16,7 @@ import { createRect, valueInThousands, tickValues, buildCircle, calculateXTicks,
 
 
 export const buildHistoricalChart = (group, width, height, xPosition, yPosition, only, data, lastData, highestValue, timeframe) => {
-    const overflowHeight = 35;
+    const overflowHeight = 22;
     const adjustedHeight = height - overflowHeight;
 
     group.append('rect')
@@ -24,11 +24,11 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
         .attr('y', yPosition)
         .attr('width', width)
         .attr('height', overflowHeight)
-        .attr('fill', "#293C4B");
+        .attr('fill', "#FFFFFF");
 
     yPosition += overflowHeight;
 
-    createRect(group, xPosition, yPosition, width, adjustedHeight, '#293C4B');
+    createRect(group, xPosition, yPosition, width, adjustedHeight, '#FFFFFF');
 
 
     let xDomain;
@@ -111,7 +111,7 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
             .style('font-weight', '500')
             .style('line-height', '15px')
             .style('letter-spacing', '0.4285714030265808px')
-            .style('fill', '#D6D9DC'));
+            .style('fill', '#616161'));
 
     group.append('g')
         .attr('transform', `translate(${xPosition},${yPosition})`)
@@ -125,9 +125,9 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
             .style('line-height', '15px')
             .style('letter-spacing', '0.4285714030265808px')
             .style('text-align', 'left')
-            .style('fill', '#D6D9DC'))
+            .style('fill', '#616161'))
         .call(g => g.selectAll('.tick line')
-            .attr('stroke', '#3A4B59')
+            .attr('stroke', '#E5E9EB')
             .attr('x2', width));
 
     if (only === true) {
@@ -143,22 +143,53 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
                 .style('line-height', '15px')
                 .style('letter-spacing', '0.4285714030265808px')
                 .style('text-align', 'left')
-                .style('fill', '#D6D9DC'))
+                .style('fill', '#616161'))
             .call(g => g.selectAll('.tick line')
-                .attr('stroke', '#3A4B59')
+                .attr('stroke', '#E5E9EB')
                 .attr('x2', -width));
     }
 
-    const groupLine = d3.line()
+    const line = d3.line()
         .x(d => xScale(d.date) + xPosition)
         .y(d => yScale(d.close) + yPosition);
 
+    const area = d3.area()
+        .x(d => xScale(d.date) + xPosition)
+        .y0(yScale.range()[0] + yPosition)
+        .y1(d => yScale(d.close) + yPosition);
+
+    const defs = group.append('defs');
+    const gradient = defs.append('linearGradient')
+        .attr('id', 'area-gradient')
+        .attr('gradientUnits', 'userSpaceOnUse')
+        .attr('x1', '0%')
+        .attr('y1', '0%')
+        .attr('x2', '0%')
+        .attr('y2', '100%');
+
+    gradient.append('stop')
+        .attr('offset', '0%')
+        .attr('stop-color', '#0C66E4')
+        .attr('stop-opacity', 0.3);
+
+    gradient.append('stop')
+        .attr('offset', '100%')
+        .attr('stop-color', '#0C66E4')
+        .attr('stop-opacity', 0);
+
+    group.append('path')
+        .datum(data)
+        .attr('class', 'area')
+        .attr('fill', 'url(#area-gradient)')
+        .attr('d', area);
+
     const path = group.append('path')
         .datum(data)
+        .attr('class', 'line')
         .attr('fill', 'none')
-        .attr('stroke', '#17A2B8')
-        .attr('stroke-width', 1.5)
-        .attr('d', groupLine);
+        .attr('stroke', '#0C66E4')
+        .attr('stroke-width', 2)
+        .attr('d', line);
 
     const totalLength = path.node().getTotalLength();
 
@@ -167,6 +198,7 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
         .transition()
         .duration(2000)
         .attr('stroke-dashoffset', 0);
+
 
     if (timeframe != 0) {
         buildCircle(group, xPosition, yPosition, xScale, yScale, lastData);

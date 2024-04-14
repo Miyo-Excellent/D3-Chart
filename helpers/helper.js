@@ -72,8 +72,8 @@ export const buildCircle = (group, xPosition, yPosition, xScale, yScale, lastDat
         .attr('cy', circleY)
         .attr('r', 0)
         .attr('fill', '#fff')
-        .attr('stroke', '#17A2B8')
-        .attr('stroke-width', 1.5)
+        // .attr('stroke', '#17A2B8')
+        .attr('stroke-width', 0)
         .attr('fill-opacity', 0.8);
 
     // Outer ring animation
@@ -86,7 +86,7 @@ export const buildCircle = (group, xPosition, yPosition, xScale, yScale, lastDat
         .attr('cx', circleX)
         .attr('cy', circleY)
         .attr('r', 0)
-        .attr('fill', '#17A2B8');
+        .attr('fill', '#0C66E4');
 
     // Inner circle animation
     innerCircle.transition()

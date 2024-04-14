@@ -4,7 +4,7 @@ import { buildChart, updateChart } from './core/chartUtils.js';
 
 // Global states for the chart
 let chartState = {
-  timeframe: 31, // 3650
+  timeframe: 3650, // 3650
   context: 1
 };
 
@@ -16,16 +16,11 @@ let chartState = {
  * initApp();
  */
 const initApp = async () => {
-  const width = window.innerWidth - 20; // Modificado aquí
-  const height = 540;
+  // const width = window.innerWidth - 20; // Modificado aquí
+  const width = 952; // Modificado aquí
+  const height = 452;
   const margin = { top: 20, right: 70, bottom: 50, left: 70 };
-  const { dates, prices } = await fetchMarketData(chartState.timeframe);
-  const data = dates.map((date, index) => ({
-    // si luego los valores vienen con tiempo eliminar el + 'T00:00:00'
-    date: new Date(date + 'T00:00:00'),
-    close: prices[index]
-  }));
-
+  const data = await fetchMarketData(chartState.timeframe);
 
   buildChart('#chart-container', width, height, margin, chartState.context, data, chartState.timeframe);
 
@@ -40,14 +35,7 @@ const initApp = async () => {
   });
 
   const updateChartBasedOnState = async () => {
-    const { dates, prices } = await fetchMarketData(chartState.timeframe);
-    const data = dates.map((date, index) => ({
-      date: new Date(date + 'T00:00:00'),
-      close: prices[index]
-    }));
-
-    // console.log('data', data);
-
+    const data = await fetchMarketData(chartState.timeframe);
     await updateChart('#chart-container', width, height, margin, chartState.context, data, chartState.timeframe);
   };
 };
