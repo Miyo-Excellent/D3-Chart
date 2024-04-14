@@ -15,29 +15,30 @@ import { generateDummyProjectionsData } from '../helpers/dummyData.js';
  */
 
 export const buildProjectionChart = (group, width, height, xPosition, yPosition, only, data, lastData, highestValue, hasOverflow, timeframe) => {
-    const overflowWidth = hasOverflow ? 35 : 0;
+    const overflowWidth = hasOverflow ? 22 : 0;
     const adjustedWidth = width - overflowWidth;
-    const overflowHeight = 35;
+    const overflowHeight = 22;
     const adjustedHeight = height - overflowHeight;
 
     const defs = group.append("defs");
     const pattern = defs.append("pattern")
         .attr("id", "diagonalStripes")
-        .attr("width", 30)
-        .attr("height", 30)
+        .attr("width", 20)
+        .attr("height", 20)
         .attr("patternUnits", "userSpaceOnUse")
         .attr("patternTransform", "rotate(45)");
 
     pattern.append("rect")
-        .attr("width", 15)
-        .attr("height", 30)
+        .attr("width", 10)
+        .attr("height", 20)
         .attr("fill", "#EAEAEA");
 
     pattern.append("rect")
-        .attr("width", 15)
-        .attr("height", 30)
-        .attr("transform", "translate(15,0)")
+        .attr("width", 10)
+        .attr("height", 20)
+        .attr("transform", "translate(10,0)")
         .attr("fill", "#EFEFEF");
+
 
     yPosition += overflowHeight;
 
@@ -119,7 +120,7 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
         .call(d3.axisRight(yScale).tickSize(0).tickFormat(valueInThousands).tickValues(yTicks))
         .call(g => g.select('.domain').remove())
         .call(g => g.selectAll('.tick text')
-            .attr('dx', hasOverflow ? '4.5em' : '1.5em')
+            .attr('dx', hasOverflow ? '3.1em' : '1.5em')
             .style('font-family', 'Montserrat')
             .style('font-size', '12px')
             .style('font-weight', '500')
@@ -219,8 +220,8 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
         const path = group.append('path')
             .datum(data)
             .attr('fill', 'none')
-            .attr('stroke', '#17A2B8')
-            .attr('stroke-width', 1.5)
+            .attr('stroke', '#0C66E4')
+            .attr('stroke-width', 2)
             .attr('d', groupLine);
 
         const totalLength = path.node().getTotalLength();
@@ -274,7 +275,7 @@ const drawOuterLines = (group, xPosition, yPosition, height, width, hasOverflow)
             .attr('y2', yPosition + height + 12 - offsetY);
     }
 
-    const xPositionAdjusted = hasOverflow ? xPosition + 35 : xPosition;
+    const xPositionAdjusted = hasOverflow ? xPosition + 22 : xPosition;
 
     const verticalLine = group.append('line')
         .attr('x1', xPositionAdjusted + width + 10)
@@ -358,18 +359,18 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
 
         gradient.append('stop')
             .attr('offset', `${Math.max(0, offset - 0.1)}%`)
-            .attr('stop-color', '#24C6C8');
+            .attr('stop-color', '#1ED36F');
 
         gradient.append('stop')
             .attr('offset', `${offset}%`)
-            .attr('stop-color', '#24C6C8');
+            .attr('stop-color', '#1ED36F');
         gradient.append('stop')
             .attr('offset', `${offset}%`)
-            .attr('stop-color', '#ED5666');
+            .attr('stop-color', '#F76659');
 
         gradient.append('stop')
             .attr('offset', `${Math.min(100, offset + 0.1)}%`)
-            .attr('stop-color', '#ED5666');
+            .attr('stop-color', '#F76659');
 
         const rectHeight = yMin - yMax;
         const maxBorderRadius = 5;
@@ -406,20 +407,20 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
             squareOverflowGroup.append('circle')
                 .attr('cx', xCenterLateralOverflow)
                 .attr('cy', yCenterOverflow)
-                .attr('r', 5)
-                .attr('fill', 'red');
+                .attr('r', 2)
+                .attr('fill', '#24C6C8');
         } else if (p.minValue > highestValue || p.startDate < start) {
             overflowGroup.append('circle')
                 .attr('cx', xScale(p.startDate))
                 .attr('cy', yCenterOverflow)
-                .attr('r', 5)
-                .attr('fill', 'red');
+                .attr('r', 2)
+                .attr('fill', '#24C6C8');
         } else if (p.startDate > end && lateralOverflowGroup) {
             lateralOverflowGroup.append('circle')
                 .attr('cx', xCenterLateralOverflow)
                 .attr('cy', yScale(p.maxValue))
-                .attr('r', 5)
-                .attr('fill', 'red');
+                .attr('r', 2)
+                .attr('fill', lastData.close > p.maxValue ? '#F76659' : '#24C6C8');
         }
 
         const xStart = xScale(p.startDate) + xPosition;
@@ -429,7 +430,7 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
             .attr('cx', xStart)
             .attr('cy', yMax + 30)
             .attr('r', 0)
-            .attr('fill', '#24C6C8')
+            .attr('fill', lastData.close > p.maxValue ? '#F76659' : '#1ED36F')
             .datum(p)
             .on('mouseover', (event, d) => {
                 const [x, y] = d3.pointer(event);
@@ -440,7 +441,7 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
         circleProjection.transition()
             .duration(1000)
             .delay(i * 50)
-            .attr('r', 5)
+            .attr('r', 3)
             .attr('cy', yMax);
     });
 };
@@ -547,7 +548,7 @@ const createTooltipProjection = () => {
         .style('pointer-events', 'none')
         .style('opacity', 0)
         .merge(tooltip);
-    
+
     return tooltip;
 };
 

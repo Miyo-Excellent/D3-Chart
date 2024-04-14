@@ -16,7 +16,7 @@ import { createRect, valueInThousands, tickValues, buildCircle, calculateXTicks,
 
 
 export const buildHistoricalChart = (group, width, height, xPosition, yPosition, only, data, lastData, highestValue, timeframe) => {
-    const overflowHeight = 35;
+    const overflowHeight = 22;
     const adjustedHeight = height - overflowHeight;
 
     group.append('rect')
@@ -149,16 +149,47 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
                 .attr('x2', -width));
     }
 
-    const groupLine = d3.line()
+    const line = d3.line()
         .x(d => xScale(d.date) + xPosition)
         .y(d => yScale(d.close) + yPosition);
 
+    const area = d3.area()
+        .x(d => xScale(d.date) + xPosition)
+        .y0(yScale.range()[0] + yPosition)
+        .y1(d => yScale(d.close) + yPosition);
+
+    const defs = group.append('defs');
+    const gradient = defs.append('linearGradient')
+        .attr('id', 'area-gradient')
+        .attr('gradientUnits', 'userSpaceOnUse')
+        .attr('x1', '0%')
+        .attr('y1', '0%')
+        .attr('x2', '0%')
+        .attr('y2', '100%');
+
+    gradient.append('stop')
+        .attr('offset', '0%')
+        .attr('stop-color', '#0C66E4')
+        .attr('stop-opacity', 0.3);
+
+    gradient.append('stop')
+        .attr('offset', '100%')
+        .attr('stop-color', '#0C66E4')
+        .attr('stop-opacity', 0);
+
+    group.append('path')
+        .datum(data)
+        .attr('class', 'area')
+        .attr('fill', 'url(#area-gradient)')
+        .attr('d', area);
+
     const path = group.append('path')
         .datum(data)
+        .attr('class', 'line')
         .attr('fill', 'none')
         .attr('stroke', '#0C66E4')
         .attr('stroke-width', 2)
-        .attr('d', groupLine);
+        .attr('d', line);
 
     const totalLength = path.node().getTotalLength();
 
@@ -167,6 +198,7 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
         .transition()
         .duration(2000)
         .attr('stroke-dashoffset', 0);
+
 
     if (timeframe != 0) {
         buildCircle(group, xPosition, yPosition, xScale, yScale, lastData);
