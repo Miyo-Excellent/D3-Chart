@@ -42,7 +42,7 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
 
     yPosition += overflowHeight;
 
-    createRect(group, xPosition, yPosition, width, adjustedHeight, '#F7F8FA');
+    createRect(group, xPosition, yPosition, width, adjustedHeight, '#FFFFFF');
     drawOuterLines(group, xPosition, yPosition, adjustedHeight, adjustedWidth, hasOverflow);
     drawOverflowRect(group, xPosition + adjustedWidth, yPosition, adjustedHeight, overflowHeight, hasOverflow);
 
