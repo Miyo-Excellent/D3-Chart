@@ -344,7 +344,6 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
         const xStart = xScale(p.startDate) + xPosition;
         const xEnd = xScale(p.endDate > end ? end : p.endDate) + xPosition;
         const width = 2.5;
-        console.log(width);
         const yMax = yScale(p.maxValue > highestValue ? highestValue : p.maxValue) + yPosition;
         const yMin = yScale(p.minValue) + yPosition;
         const yLastDatum = yScale(lastData.close) + yPosition;
