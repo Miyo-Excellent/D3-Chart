@@ -183,58 +183,94 @@ export function getTickFormat(timeframe) {
 * @param {Object[]} data - Los datos mostrados en el gráfico, donde cada objeto debe tener una fecha y un valor.
 */
 export const buildTooltip = (group, xPosition, yPosition, width, adjustedHeight, xScale, yScale, data) => {
-    const tooltipGroup = group.append('g')
-        .attr('class', 'tooltip')
-        .style('display', 'none');
+    const tooltip = d3.select('body').append('div')
+        .attr('class', 'tooltip-historical')
+        .style('position', 'absolute')
+        .style('background-color', '#FFFFFF')
+        .style('padding', '16px 24px')
+        .style('box-shadow', '0 8px 16px 0 rgba(0, 0, 0, 0.12)')
+        .style('font-family', 'Montserrat, sans-serif')
+        .style('pointer-events', 'none')
+        .style('opacity', 0)
+        .style('transition', 'opacity 0.2s')
+        .style('display', 'none')
+        .style('flex-direction', 'column')
+        .style('align-items', 'flex-start')
+        .style('gap', '5px')
+        .style('border-radius', '20px')
+        .style('background', 'linear-gradient(100deg, #FBFBFF 6.9%, rgba(255, 255, 255, 0.83) 84.24%)');
 
-    tooltipGroup.append('circle')
-        .attr('class', 'tooltip-circle')
-        .attr('r', 5)
-        .attr('stroke', 'black')
-        .attr('fill', 'white');
+    const container = tooltip.append('div')
+        .style('display', 'flex')
+        .style('flex-direction', 'column')
+        .style('align-items', 'flex-start')
+        .style('gap', '8px');
 
-    tooltipGroup.append('text')
-        .attr('class', 'tooltip-text-date')  // Clase para la fecha
-        .attr('x', 15)
-        .attr('dy', '.31em') // Puedes ajustar este valor para cambiar la posición vertical
-        .style('text-anchor', 'start')
-        .style('font-size', '12px')
-        .style('fill', '#D6D9DC');
+    const bottomContainer = container.append('div')
+        .style('display', 'flex')
+        .style('margin-top', '16px')
+        .style('flex-direction', 'row')
+        .style('justify-content', 'space-between')
+        .style('width', '100%');
 
-    tooltipGroup.append('text')
-        .attr('class', 'tooltip-text-value')  // Clase para el valor
-        .attr('x', 15)
-        .attr('dy', '1.62em') // Ajusta este valor para controlar el espacio entre las líneas de texto
-        .style('text-anchor', 'start')
-        .style('font-size', '12px')
-        .style('fill', '#D6D9DC');
+    const leftBottomContainer = bottomContainer.append('div')
+        .style('display', 'flex')
+        .style('margin-right', '16px')
+        .style('flex-direction', 'column')
+        .style('align-items', 'flex-start');
 
+    leftBottomContainer.append('div')
+        .attr('class', 'close-title')
+        .text('CLOSE')
+        .style('font-size', '10px')
+        .style('font-weight', '700')
+        .style('line-height', '12px')
+        .style('margin-bottom', '4px')
+        .style('text-transform', 'uppercase');
+
+    leftBottomContainer.append('div')
+        .attr('class', 'close-value')
+        .style('font-size', '16px')
+        .style('font-family', 'Montserrat')
+        .style('font-weight', '400')
+        .style('line-height', '24px');
+
+    const rightBottomContainer = bottomContainer.append('div')
+        .style('display', 'flex')
+        .style('flex-direction', 'column')
+        .style('align-items', 'flex-start');
+
+    rightBottomContainer.append('div')
+        .attr('class', 'date-title')
+        .text('DATE')
+        .style('font-size', '10px')
+        .style('font-weight', '700')
+        .style('line-height', '12px')
+        .style('margin-bottom', '4px')
+        .style('text-transform', 'uppercase');
+
+    rightBottomContainer.append('div')
+        .attr('class', 'date-value')
+        .style('font-size', '16px')
+        .style('font-family', 'Montserrat')
+        .style('font-weight', '400')
+        .style('line-height', '24px');
 
     const bisectDate = d3.bisector(d => d.date).left;
 
-    const mousemove = event => {
-        try {
-            const x0 = xScale.invert(d3.pointer(event, this)[0] - xPosition);
-            const i = bisectDate(data, x0, 1);
-            const d0 = data[i - 1];
-            const d1 = data[i];
-            const d = x0 - d0.date > d1.date - x0 ? d1 : d0;
+    const outerRing = group.append('circle')
+        .attr('r', 4.5)
+        .attr('fill', '#fff')
+        .attr('stroke-width', 0)
+        .attr('fill-opacity', 0.8);
 
-            // Formato para la fecha del eje X - ajusta esto según tu formato de fecha
-            const formatDate = d3.timeFormat("%Y-%m-%d %H:%M:%S");
+    const focusCircle = group.append('circle')
+        .attr('class', 'focus-circle')
+        .attr('r', 2.5)
+        .attr('fill', '#0C66E4')
+        .style('opacity', 0);
 
-            // Actualizar la transformación del grupo tooltip para moverlo al punto correcto
-            tooltipGroup.attr('transform', `translate(${xScale(d.date) + xPosition},${yScale(d.close) + yPosition})`);
-
-            // Actualizar los textos dentro del grupo tooltip
-            // Se asume que ya tienes dos elementos de texto dentro de tu grupo tooltip con las clases 'tooltip-text-date' y 'tooltip-text-value'
-            tooltipGroup.select('.tooltip-text-date').text(`Fecha: ${formatDate(d.date)}`);
-            tooltipGroup.select('.tooltip-text-value').text(`Valor: ${d.close}`);
-        } catch (error) {
-            // cannot read property 'date' of undefined
-        }
-    };
-
+    
 
     group.append('rect')
         .attr('class', 'overlay')
@@ -244,9 +280,37 @@ export const buildTooltip = (group, xPosition, yPosition, width, adjustedHeight,
         .attr('height', adjustedHeight)
         .style('fill', 'none')
         .style('pointer-events', 'all')
-        .on('mouseover', () => tooltipGroup.style('display', null))
-        .on('mouseout', () => tooltipGroup.style('display', 'none'))
-        .on('mousemove', mousemove);
+        .on('mouseover', () => {
+            tooltip.style('display', 'flex');
+            tooltip.style('opacity', 1);
+            focusCircle.style('opacity', 1);
+            outerRing.style('opacity', 1);
+        })
+        .on('mouseout', () => {
+            tooltip.style('display', 'none');
+            tooltip.style('opacity', 0);
+            focusCircle.style('opacity', 0);
+            outerRing.style('opacity', 0);
+        })
+        .on('mousemove', event => {
+            try {
+                const x0 = xScale.invert(d3.pointer(event, this)[0] - xPosition);
+                const i = bisectDate(data, x0, 1);
+                const d0 = data[i - 1];
+                const d1 = data[i];
+                const d = x0 - d0.date > d1.date - x0 ? d1 : d0;
+
+                tooltip.style('left', `${xScale(d.date) + xPosition}px`).style('top', `${yScale(d.close) + yPosition - 80}px`);
+                outerRing.attr('cx', xScale(d.date) + xPosition).attr('cy', yScale(d.close) + yPosition).style('opacity', 1);
+                focusCircle.attr('cx', xScale(d.date) + xPosition).attr('cy', yScale(d.close) + yPosition).style('opacity', 1);
+
+                leftBottomContainer.select('.close-value').text(`$${abbreviateNumber(d.close)}`);
+                rightBottomContainer.select('.date-value').text(d3.timeFormat("%Y-%m-%d")(d.date));
+            } catch {
+                focusCircle.style('opacity', 0);
+                outerRing.style('opacity', 0);
+            }
+        });
 };
 
 export const abbreviateNumber = (value) => {
