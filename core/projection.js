@@ -412,7 +412,7 @@ const populateChart = (group, xPosition, yPosition, xScale, yScale, projectionDa
                 const [x, y] = d3.pointer(event);
                 showTooltipProjection(d, x + window.scrollX, y + window.scrollY);
             })
-        .on('mouseout', hideTooltipProjection);
+            .on('mouseout', hideTooltipProjection);
 
         middleCircle.transition()
             .duration(1000)
@@ -493,17 +493,37 @@ const drawOverflowRect = (group, xPosition, yPosition, height, width, hasOverflo
             const offsetX = Math.cos(angleRadians) * halfIncline;
             const offsetY = Math.sin(angleRadians) * halfIncline;
 
-            group.append('line')
+            const line = group.append('line')
                 .attr('x1', xPosition + offsetX)
                 .attr('y1', yPosition + height + 12 - offsetY)
                 .attr('x2', xPosition + offsetX)
                 .attr('y2', yPosition + height + 12 - offsetY)
                 .attr('stroke', '#616161')
-                .attr('stroke-width', 1.5)
-                .transition()
+                .attr('stroke-width', 1.5);
+
+            line.transition()
                 .duration(500)
                 .attr('x2', xPosition - offsetX)
                 .attr('y2', yPosition + height + 12 + offsetY);
+
+            // Creación del texto con opacidad inicial 0
+            const text = group.append('text')
+                .attr('x', xPosition + width)
+                .attr('y', yPosition + height + 3)
+                .attr('dy', '2.2em')
+                .style('font-family', 'Montserrat')
+                .style('font-size', '12px')
+                .style('font-weight', '800')
+                .style('line-height', '15px')
+                .style('letter-spacing', '0.4285714030265808px')
+                .style('fill', '#616161')
+                .style('opacity', 0)
+                .text('+10 Years');  // El texto que quieres mostrar
+
+            // Transición del texto para que su opacidad cambie a 1 al mismo tiempo que la línea se dibuja
+            text.transition()
+                .duration(500)  // La duración de la transición del texto debe coincidir con la de la línea
+                .style('opacity', 1);
         }
     }
 
@@ -542,7 +562,20 @@ const drawOverflowRect = (group, xPosition, yPosition, height, width, hasOverflo
         inclinedLine.transition()
             .duration(500)
             .attr('x2', xPositionAdjusted + widthAdjusted + offsetX / 2)
-            .attr('y2', yPosition + 2 - offsetY / 2);
+            .attr('y2', yPosition + 2 - offsetY / 2)
+            .on('end', () => {  // Se agrega el texto al finalizar la transición de la línea
+                group.append('text')
+                    .attr('x', hasOverflow ? xPositionAdjusted + 35 : xPositionAdjusted + 16)
+                    .attr('y', yPosition - 40)
+                    .attr('dy', '2.2em')
+                    .style('font-family', 'Montserrat')
+                    .style('font-size', '12px')
+                    .style('font-weight', '800')
+                    .style('line-height', '15px')
+                    .style('letter-spacing', '0.4285714030265808px')
+                    .style('fill', '#616161')
+                    .text('+3 X');  // El texto que quieres mostrar
+            });
     }
 };
 
@@ -557,7 +590,6 @@ const drawTopRightOverflowRect = (group, xPosition, yPosition, overflowHeight, o
 
     return topRightOverflowGroup;
 };
-
 
 const createTooltipProjection = () => {
     // Crear y seleccionar el tooltip si ya existe
