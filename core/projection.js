@@ -558,11 +558,13 @@ const drawOverflowRect = (group, xPosition, yPosition, height, width, hasOverflo
             .attr('y2', yPosition - 1 + offsetY / 2)
             .attr('stroke', '#616161')
             .attr('stroke-width', 1.5);
+
         inclinedLine.transition()
             .duration(500)
             .attr('x2', xPositionAdjusted + widthAdjusted + offsetX / 2)
             .attr('y2', yPosition + 2 - offsetY / 2);
 
+        // Creación del texto con opacidad inicial 0
         const text = group.append('text')
             .attr('x', hasOverflow ? xPositionAdjusted + 35 : xPositionAdjusted + 16)
             .attr('y', yPosition - 40)
@@ -573,13 +575,14 @@ const drawOverflowRect = (group, xPosition, yPosition, height, width, hasOverflo
             .style('line-height', '15px')
             .style('letter-spacing', '0.4285714030265808px')
             .style('fill', '#616161')
-            .style('opacity', 0)  
-            .text('+3X');  
+            .style('opacity', 0)  // Inicia el texto como transparente
+            .text('+3X');  // El texto que quieres mostrar
 
-       
+        // Transición del texto para que su opacidad cambie a 1 al mismo tiempo que la línea se dibuja
         text.transition()
-            .duration(500) 
+            .duration(500)  // La duración de la transición del texto debe coincidir con la de la línea
             .style('opacity', 1);
+
     }
 };
 
