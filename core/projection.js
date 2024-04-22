@@ -558,24 +558,28 @@ const drawOverflowRect = (group, xPosition, yPosition, height, width, hasOverflo
             .attr('y2', yPosition - 1 + offsetY / 2)
             .attr('stroke', '#616161')
             .attr('stroke-width', 1.5);
-
         inclinedLine.transition()
             .duration(500)
             .attr('x2', xPositionAdjusted + widthAdjusted + offsetX / 2)
-            .attr('y2', yPosition + 2 - offsetY / 2)
-            .on('end', () => {  // Se agrega el texto al finalizar la transición de la línea
-                group.append('text')
-                    .attr('x', hasOverflow ? xPositionAdjusted + 35 : xPositionAdjusted + 16)
-                    .attr('y', yPosition - 40)
-                    .attr('dy', '2.2em')
-                    .style('font-family', 'Montserrat')
-                    .style('font-size', '12px')
-                    .style('font-weight', '800')
-                    .style('line-height', '15px')
-                    .style('letter-spacing', '0.4285714030265808px')
-                    .style('fill', '#616161')
-                    .text('+3 X');  // El texto que quieres mostrar
-            });
+            .attr('y2', yPosition + 2 - offsetY / 2);
+
+        const text = group.append('text')
+            .attr('x', hasOverflow ? xPositionAdjusted + 35 : xPositionAdjusted + 16)
+            .attr('y', yPosition - 40)
+            .attr('dy', '2.2em')
+            .style('font-family', 'Montserrat')
+            .style('font-size', '12px')
+            .style('font-weight', '800')
+            .style('line-height', '15px')
+            .style('letter-spacing', '0.4285714030265808px')
+            .style('fill', '#616161')
+            .style('opacity', 0)  
+            .text('+3X');  
+
+       
+        text.transition()
+            .duration(500) 
+            .style('opacity', 1);
     }
 };
 
