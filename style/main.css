@@ -7,7 +7,8 @@ body {
     justify-content: space-between;
     width: 100%;
     position: relative;
-    top: 20px;
+    margin-bottom: 17px;
+    margin-top: 16px;
 }
 
 .button-group {
@@ -35,7 +36,7 @@ body {
 
 .btn {
     border-radius: 5px;
-    border: 1px solid #728594;
+    border: none;
     padding: 5px 8px;
     justify-content: center;
     align-items: center;
@@ -52,15 +53,15 @@ body {
 }
 
 .btn.left {
-    background-color: transparent;
+    background-color: #F5F7FF;
 }
 
 .btn.center {
-    background-color: transparent;
+    background-color: #F5F7FF;
 }
 
 .btn.right {
-    background-color: transparent;
+    background-color: #F5F7FF;
     padding-left: 8px;
     padding-right: 8px;
     display: flex;
@@ -91,7 +92,7 @@ body {
 }
 
 #new-outlook span {
-    margin-right: 35px; 
+    margin-right: 35px;
     position: relative;
 }
 
@@ -107,10 +108,23 @@ body {
 }
 
 @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-2px); }
-    50% { transform: translateX(2px); }
-    75% { transform: translateX(-2px); }
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-2px);
+    }
+
+    50% {
+        transform: translateX(2px);
+    }
+
+    75% {
+        transform: translateX(-2px);
+    }
 }
 
 #new-outlook:hover span::after {
@@ -123,7 +137,7 @@ body {
     right: 0px;
     top: 50%;
     transform: translateY(-50%);
-    transition: transform 0.3s ease; 
+    transition: transform 0.3s ease;
 }
 
 #new-outlook:hover img {
@@ -136,4 +150,41 @@ body {
 
 .filter-icon {
     margin-right: 5px;
+}
+
+.header-left {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.main-value {
+    color: #000;
+    font-family: Montserrat;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 22px;
+}
+
+.main-currency {
+    color: #616161;
+    font-family: Montserrat;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 12px;
+    text-transform: uppercase;
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
+.main-variation {
+    color: #000;
+    font-family: Montserrat;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 12px;
+    text-transform: uppercase;
 }
