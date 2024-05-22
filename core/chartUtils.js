@@ -8,10 +8,10 @@ import { buildProjectionChart } from './projection.js';
  * @param {number} height - Height of the chart.
  * @param {object} margin - Margin of the chart.
  * @param {number} context - Context in which the chart will be drawn.
- * @param {Array} data - Data to be used in the chart.
+ * @param {Array} dataApi - Data to be used in the chart.
  * @param {number} timeframe - Timeframe for the chart data.
  */
-export const buildChart = async (containerSelector, width, height, margin, context, data, timeframe) => {
+export const buildChart = async (containerSelector, width, height, margin, context, dataApi, timeframe) => {
     const svg = d3.select(containerSelector).append('svg')
         .attr('width', width)
         .attr('height', height);
@@ -20,6 +20,8 @@ export const buildChart = async (containerSelector, width, height, margin, conte
 
     const projectionGroupSvg = svg.append('g');
     const historicalGroupSvg = svg.append('g');
+
+    let data = dataApi.data;
 
     const latestDataPoint = data[data.length - 1];
 
@@ -46,6 +48,9 @@ export const buildChart = async (containerSelector, width, height, margin, conte
         lastYearLatestData = currentYearFilteredData[currentYearFilteredData.length - 1];
         data = lastYearData;
     }
+
+    document.getElementById('main-value').innerHTML = dataApi.latestPrice;
+    document.getElementById('main-variation').innerHTML = dataApi.priceChange;
 
     switch (context) {
         case 0:
