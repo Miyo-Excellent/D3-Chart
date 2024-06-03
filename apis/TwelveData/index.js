@@ -56,12 +56,16 @@ const processData = (dates, prices) => {
   // No revertimos los datos, ya que el primer elemento debe ser el más reciente
   // Obtener el precio más reciente
   const latestPrice = data[data.length - 1].close;
-  
+  const latestDate = data[data.length - 1].date;
+
+  console.log('latestDate', latestDate);
+
   // Obtener el precio del día anterior
   const previousPrice = data.length > 1 ? data[data.length - 2].close : latestPrice;
-  
+
   // Calcular la variación del precio
   const priceChange = latestPrice - previousPrice;
+  const priceChangePercentage = ((priceChange / previousPrice) * 100).toFixed(2);
 
   // Formatear los valores en dólares sin el símbolo de moneda
   const formatter = new Intl.NumberFormat('en-US', {
@@ -71,15 +75,23 @@ const processData = (dates, prices) => {
     maximumFractionDigits: 2,
   });
 
-  const formattedLatestPrice = formatter.format(latestPrice).replace('$', '');
+  const formatterNoDecimals = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+
+  const formattedLatestPrice = formatterNoDecimals.format(latestPrice).replace('$', '');
   const formattedPriceChange = formatter.format(priceChange).replace('$', '');
 
   // Devolver los datos procesados junto con el último precio y su variación
   return {
     data,
     latestPrice: formattedLatestPrice,
-    priceChange: formattedPriceChange
+    mainVariation: priceChange>= 0 ? '+' : '' + `${formattedPriceChange}`,
+    priceChange: `(${priceChangePercentage}%)`,
+    priceChangeIsPositive: priceChange >= 0,
+    latestDate
   };
 };
-
-

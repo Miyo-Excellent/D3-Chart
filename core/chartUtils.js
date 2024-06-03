@@ -50,7 +50,11 @@ export const buildChart = async (containerSelector, width, height, margin, conte
     }
 
     document.getElementById('main-value').innerHTML = dataApi.latestPrice;
-    document.getElementById('main-variation').innerHTML = dataApi.priceChange;
+    document.getElementById('main-currency').innerHTML = dataApi.mainVariation
+
+    let priceChange = document.getElementById('main-variation');
+    priceChange.innerHTML = dataApi.priceChange;
+    priceChange.className = dataApi.priceChangeIsPositive ? 'main-variation positive' : 'main-variation negative';
 
     switch (context) {
         case 0:

@@ -11,6 +11,14 @@ body {
     margin-top: 16px;
 }
 
+.positive{
+    color: #0EA05D;
+}
+
+.negative{
+    color: #FF0000;
+}
+
 .button-group {
     display: flex;
 }
@@ -159,32 +167,41 @@ body {
 }
 
 .main-value {
-    color: #000;
+    color: #474F57;
     font-family: Montserrat;
-    font-size: 18px;
+    font-size: 16px;
     font-style: normal;
-    font-weight: 600;
-    line-height: 22px;
+    font-weight: 500;
+    line-height: 20px;
 }
 
 .main-currency {
-    color: #616161;
+    color: #474F57;
     font-family: Montserrat;
-    font-size: 12px;
+    font-size: 14px;
     font-style: normal;
-    font-weight: 700;
-    line-height: 12px;
+    font-weight: 400;
+    line-height: 18px;
     text-transform: uppercase;
-    margin-left: 3px;
-    margin-right: 3px;
+    margin-left: 8px;
+    margin-right: 8px;
 }
 
 .main-variation {
-    color: #000;
     font-family: Montserrat;
-    font-size: 12px;
+    font-size: 14px;
     font-style: normal;
-    font-weight: 700;
-    line-height: 12px;
+    font-weight: 600;
+    line-height: 18px;
     text-transform: uppercase;
+    margin-right: 8px;
+}
+
+.text-date-variation{
+    color: #8C96A1;
+    font-family: Montserrat;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 18px;
 }
