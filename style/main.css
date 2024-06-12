@@ -51,25 +51,25 @@ body {
     margin-right: 8px;
     cursor: pointer;
     transition: background-color 0.3s;
-    color: #000;
+    color: #878A96;
     font-family: Montserrat;
-    font-size: 10px;
+    font-size: 12px;
     font-style: normal;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 12px;
-    text-transform: uppercase;
+    text-transform: none;
 }
 
 .btn.left {
-    background-color: #F5F7FF;
+    background-color: #fff;
 }
 
 .btn.center {
-    background-color: #F5F7FF;
+    background-color: #fff;
 }
 
 .btn.right {
-    background-color: #F5F7FF;
+    background-color: #fff;
     padding-left: 8px;
     padding-right: 8px;
     display: flex;
@@ -80,12 +80,13 @@ body {
 
 .btn.left.active,
 .btn.center.active {
-    background-color: #000;
-    color: #FFFFFF;
+    background-color: #FAFAFA;
+    color: #474F57;
+    border: 1.5px solid #474F57;
 }
 
 .btn:hover {
-    background-color: #000;
+    background-color: #474F57;
     color: #FFFFFF;
 }
 
