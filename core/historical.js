@@ -107,11 +107,11 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
         .call(g => g.selectAll('.tick text')
             .attr('dy', timeframe == 2 ? '2.4em' : '2.2em')
             .style('font-family', 'Montserrat')
-            .style('font-size', timeframe == 2 ? '10px' : '12px')
+            .style('font-size', timeframe == 2 ? '10px' : '10px')
             .style('font-weight', '500')
             .style('line-height', '15px')
             .style('letter-spacing', '0.4285714030265808px')
-            .style('fill', '#616161'));
+            .style('fill', '#8C96A1'));
 
     group.append('g')
         .attr('transform', `translate(${xPosition},${yPosition})`)
@@ -120,12 +120,12 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
         .call(g => g.selectAll('.tick text')
             .attr('dx', '-1.5em')
             .style('font-family', 'Montserrat')
-            .style('font-size', '12px')
+            .style('font-size', '10px')
             .style('font-weight', '500')
             .style('line-height', '15px')
             .style('letter-spacing', '0.4285714030265808px')
             .style('text-align', 'left')
-            .style('fill', '#616161'))
+            .style('fill', '#8C96A1'))
         .call(g => g.selectAll('.tick line')
             .attr('stroke', '#E5E9EB')
             .attr('x2', width));
@@ -138,12 +138,12 @@ export const buildHistoricalChart = (group, width, height, xPosition, yPosition,
             .call(g => g.selectAll('.tick text')
                 .attr('dx', '1.5em')
                 .style('font-family', 'Montserrat')
-                .style('font-size', '12px')
+                .style('font-size', '10px')
                 .style('font-weight', '500')
                 .style('line-height', '15px')
                 .style('letter-spacing', '0.4285714030265808px')
                 .style('text-align', 'left')
-                .style('fill', '#616161'))
+                .style('fill', '#8C96A1'))
             .call(g => g.selectAll('.tick line')
                 .attr('stroke', '#E5E9EB')
                 .attr('x2', -width));

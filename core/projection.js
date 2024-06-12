@@ -109,11 +109,11 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
         .call(g => g.selectAll('.tick text')
             .attr('dy', timeframe == 2 ? '2.4em' : '2.2em')
             .style('font-family', 'Montserrat')
-            .style('font-size', timeframe == 2 ? '10px': '12px')
+            .style('font-size', timeframe == 2 ? '10px': '10px')
             .style('font-weight', '500')
             .style('line-height', '15px')
             .style('letter-spacing', '0.4285714030265808px')
-            .style('fill', '#616161'));
+            .style('fill', '#8C96A1'));
 
     group.append('g')
         .attr('transform', `translate(${xPosition + adjustedWidth},${yPosition})`)
@@ -122,12 +122,12 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
         .call(g => g.selectAll('.tick text')
             .attr('dx', hasOverflow ? '3.1em' : '1.5em')
             .style('font-family', 'Montserrat')
-            .style('font-size', '12px')
+            .style('font-size', '10px')
             .style('font-weight', '500')
             .style('line-height', '15px')
             .style('letter-spacing', '0.4285714030265808px')
             .style('text-align', 'left')
-            .style('fill', '#616161'))
+            .style('fill', '#8C96A1'))
         .call(g => g.selectAll('.tick line')
             .attr('stroke', '#ECECEC')
             .attr('x2', -adjustedWidth));
@@ -150,12 +150,12 @@ export const buildProjectionChart = (group, width, height, xPosition, yPosition,
             .call(g => g.selectAll('.tick text')
                 .attr('dx', '-1.5em')
                 .style('font-family', 'Montserrat')
-                .style('font-size', '12px')
+                .style('font-size', '10px')
                 .style('font-weight', '500')
                 .style('line-height', '15px')
                 .style('letter-spacing', '0.4285714030265808px')
                 .style('text-align', 'left')
-                .style('fill', '#616161'))
+                .style('fill', '#8C96A1'))
             .call(g => g.selectAll('.tick line')
                 .attr('stroke', '#ECECEC')
                 .attr('x2', adjustedWidth));
@@ -246,7 +246,7 @@ const drawOuterLines = (group, xPosition, yPosition, height, width, hasOverflow)
         .attr('y1', yPosition + height + 12)
         .attr('x2', xPosition + 5)
         .attr('y2', yPosition + height + 12)
-        .attr('stroke', '#616161')
+        .attr('stroke', '#8C96A1')
         .attr('stroke-width', 1.5);
 
     horizontalLine.transition()
@@ -267,7 +267,7 @@ const drawOuterLines = (group, xPosition, yPosition, height, width, hasOverflow)
             .attr('y1', yPosition + height + 12 + offsetY)
             .attr('x2', xPosition + width - 6 - offsetX) // Comenzar con la línea vertical coincidiendo con la horizontal
             .attr('y2', yPosition + height + 12 + offsetY)
-            .attr('stroke', '#616161')
+            .attr('stroke', '#8C96A1')
             .attr('stroke-width', 1.5)
             .transition()
             .duration(500)
@@ -282,7 +282,7 @@ const drawOuterLines = (group, xPosition, yPosition, height, width, hasOverflow)
         .attr('y1', yPosition + height)
         .attr('x2', xPositionAdjusted + width + 10)
         .attr('y2', yPosition + height)
-        .attr('stroke', '#616161')
+        .attr('stroke', '#8C96A1')
         .attr('stroke-width', 1.5);
 
     verticalLine.transition()
@@ -303,7 +303,7 @@ const drawOuterLines = (group, xPosition, yPosition, height, width, hasOverflow)
             .attr('y1', yPosition + 6 + offsetY / 2)
             .attr('x2', xPositionAdjusted + width + 10 + offsetX / 2)
             .attr('y2', yPosition + 6 + offsetY / 2)
-            .attr('stroke', '#616161')
+            .attr('stroke', '#8C96A1')
             .attr('stroke-width', 1.5);
 
         inclinedLine.transition()
@@ -477,7 +477,7 @@ const drawOverflowRect = (group, xPosition, yPosition, height, width, hasOverflo
             .attr('y1', yPosition + height + 12)
             .attr('x2', xPosition)
             .attr('y2', yPosition + height + 12)
-            .attr('stroke', '#616161')
+            .attr('stroke', '#8C96A1')
             .attr('stroke-width', 1.5);
 
         horizontalLine.transition()
@@ -498,7 +498,7 @@ const drawOverflowRect = (group, xPosition, yPosition, height, width, hasOverflo
                 .attr('y1', yPosition + height + 12 - offsetY)
                 .attr('x2', xPosition + offsetX)
                 .attr('y2', yPosition + height + 12 - offsetY)
-                .attr('stroke', '#616161')
+                .attr('stroke', '#8C96A1')
                 .attr('stroke-width', 1.5);
 
             line.transition()
@@ -512,11 +512,11 @@ const drawOverflowRect = (group, xPosition, yPosition, height, width, hasOverflo
                 .attr('y', yPosition + height + 3)
                 .attr('dy', '2.2em')
                 .style('font-family', 'Montserrat')
-                .style('font-size', '12px')
+                .style('font-size', '10px')
                 .style('font-weight', '800')
                 .style('line-height', '15px')
                 .style('letter-spacing', '0.4285714030265808px')
-                .style('fill', '#616161')
+                .style('fill', '#8C96A1')
                 .style('opacity', 0)
                 .text('+10 Years');  // El texto que quieres mostrar
 
@@ -535,7 +535,7 @@ const drawOverflowRect = (group, xPosition, yPosition, height, width, hasOverflo
         .attr('y1', 20)
         .attr('x2', xPositionAdjusted + widthAdjusted)
         .attr('y2', 20)
-        .attr('stroke', '#616161')
+        .attr('stroke', '#8C96A1')
         .attr('stroke-width', 1.5);
 
     verticalLine.transition()
@@ -556,7 +556,7 @@ const drawOverflowRect = (group, xPosition, yPosition, height, width, hasOverflo
             .attr('y1', yPosition - 1 + offsetY / 2)
             .attr('x2', xPositionAdjusted + widthAdjusted - offsetX / 2)
             .attr('y2', yPosition - 1 + offsetY / 2)
-            .attr('stroke', '#616161')
+            .attr('stroke', '#8C96A1')
             .attr('stroke-width', 1.5);
 
         inclinedLine.transition()
@@ -570,11 +570,11 @@ const drawOverflowRect = (group, xPosition, yPosition, height, width, hasOverflo
             .attr('y', yPosition - 40)
             .attr('dy', '2.2em')
             .style('font-family', 'Montserrat')
-            .style('font-size', '12px')
+            .style('font-size', '10px')
             .style('font-weight', '800')
             .style('line-height', '15px')
             .style('letter-spacing', '0.4285714030265808px')
-            .style('fill', '#616161')
+            .style('fill', '#8C96A1')
             .style('opacity', 0)  // Inicia el texto como transparente
             .text('+3X');  // El texto que quieres mostrar
 
@@ -670,7 +670,7 @@ const createTooltipProjection = () => {
 
     rightTopContainer.append('div')
         .attr('class', 'tooltip-subtitle')
-        .style('font-size', '12px')
+        .style('font-size', '10px')
         .style('font-weight', '500')
         .style('line-height', '1')
         .style('color', '#212529')
